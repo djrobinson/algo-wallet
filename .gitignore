@@ -1,0 +1,5 @@
+node_modules/
+server-build/
+build/
+npm-debug.log
+.env

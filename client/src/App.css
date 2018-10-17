@@ -1,0 +1,78 @@
+* {
+  font-family: 'Open Sans Condensed', sans-serif;
+}
+
+.App {
+  text-align: center;
+}
+
+.App-logo {
+  animation: App-logo-spin infinite 20s linear;
+  height: 80px;
+}
+
+.header {
+  text-align: center;
+  position: fixed;
+  width: 100%;
+  background-color: white;
+  border-bottom: solid 5px #B0D0D3;
+  height: 100px;
+  padding-left: 40px;
+  color: black;
+  z-index: 5;
+}
+
+.welcome {
+  margin-top: 300px;
+
+}
+
+.main-panel {
+  text-align: center;
+}
+
+.header h1 {
+  font-weight: 700;
+  font-size: 50px;
+}
+
+.header-row {
+  height: 100px;
+  padding: 0;
+  margin: 0;
+  margin-bottom: 15px;
+}
+
+@keyframes App-logo-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.coin-col {
+  padding-left: 50px;
+  margin-top: 15px;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 150px;
+
+}
+.coin-tile {
+  color: black;
+  background-color: white;
+  padding: 5% 20%;
+  border: solid 2px #B0D0D3;
+  border-radius: 10px;
+}
+
+.coin-tile:hover {
+  color: black;
+  border: solid 5px #B0D0D3;
+}
+
+.coin-tiles {
+  flex-direction: column;
+  justify-content: flex-start;
+}

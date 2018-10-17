@@ -1,0 +1,68 @@
+.order-row {
+  padding-top: 10px;
+  padding-bottom: 10px;
+  text-align: left;
+  border-top: solid 1px gray;
+}
+
+.order-book {
+  padding: 40px;
+}
+
+.arb-percent {
+  font-size: 40px;
+  font-weight: 700;
+}
+
+.positive {
+  color: green;
+}
+
+.negative {
+  color: red;
+}
+
+.title-row {
+  font-size: 24px;
+  border-top: solid 1px gray;
+}
+
+.order-row * {
+  font-size: 16px;
+}
+
+.overlap {
+  background-color: rgba(0, 255, 0, 0.3);
+}
+
+.poloniex .exchange-name {
+  color: turquoise;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.bittrex .exchange-name {
+  color: maroon;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.ask-row.poloniex {
+  box-sizing: border-box;
+  border-left: solid 20px turquoise;
+}
+
+.ask-row.bittrex {
+  box-sizing: border-box;
+  border-left: solid 20px maroon;
+}
+
+.bid-row.poloniex {
+  box-sizing: border-box;
+  border-right: solid 20px turquoise;
+}
+
+.bid-row.bittrex {
+  box-sizing: border-box;
+  border-right: solid 20px maroon;
+}
