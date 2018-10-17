@@ -41,6 +41,12 @@ class Bittrex extends Exchange {
     }
   }
 
+  createSignature(apiSecret, challenge) {
+    // var hmacSha512 = new HMACSHA512(Encoding.ASCII.GetBytes(apiSecret));
+    // var hash = hmacSha512.ComputeHash(Encoding.ASCII.GetBytes(challenge));
+    // return BitConverter.ToString(hash).Replace("-", string.Empty);
+  }
+
   initOrderBook(market) {
     console.log("Bittrex init order book");
     this.client = new signalR.client (
@@ -54,6 +60,20 @@ class Bittrex extends Exchange {
 
     self.client.serviceHandlers.connected = function (connection) {
       console.log ('connected');
+
+      self.client.call ('c2', 'GetAuthContext', apiKey).done (function (err, challenge) {
+        if (err) { return console.log(err); }
+        if (challenge === true) {
+          console.log ('Challenge: ' + challenge);
+          const signature = this.createSignature(apiSecret, challenge)
+          self.client.call ('c2', 'Authenticate', apiSecret, ).done (function (err, result) {
+            if (err) { return console.log(err); }
+            if (result === true) {
+              console.log ('Worked?');
+            }
+          });
+        }
+      });
       self.client.call ('c2', 'QueryExchangeState', market).done (function (err, result) {
         if (err) { return console.log(err); }
         if (result === true) {
