@@ -175,10 +175,10 @@ const updateOrderBook = (event) => {
 
   var orderUpdateInstance = new OrderUpdate(event)
 
-  orderUpdateInstance.save((err) => {
-    if (err) console.log("There was an error saving order instance")
-    console.log("Save of order update successful")
-  })
+  // orderUpdateInstance.save((err) => {
+  //   if (err) console.log("There was an error saving order instance")
+  //   console.log("Save of order update successful")
+  // })
 
 
   let book = {}
