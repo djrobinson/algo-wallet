@@ -6,7 +6,6 @@ const OrderUpdate = require('../db/models/orderUpdate.model');
 const ccxt = require ('ccxt')
 const log = require ('ololog').configure ({ locate: false })
 
-
 let masterBook = {}
 let exchange = new ccxt.bittrex ({
     'apiKey': '',
@@ -179,7 +178,6 @@ const updateOrderBook = (event) => {
   //   if (err) console.log("There was an error saving order instance")
   //   console.log("Save of order update successful")
   // })
-
 
   let book = {}
   let type = ''

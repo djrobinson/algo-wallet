@@ -6,6 +6,7 @@ const signalR = require ('signalr-client');
 const jsonic = require('jsonic');
 const zlib = require('zlib');
 const { Exchange } = require('../base/Exchange');
+const CryptoJS = require('crypto-js');
 
 class Bittrex extends Exchange {
   constructor() {
@@ -42,7 +43,10 @@ class Bittrex extends Exchange {
   }
 
   createSignature(apiSecret, challenge) {
-    // var hmacSha512 = new HMACSHA512(Encoding.ASCII.GetBytes(apiSecret));
+    const encodedSecret = new Buffer(apiSecret, "ascii")
+    const encodedChallenge = new Buffer(challenge, "ascii")
+    const hashedSecret = CryptoJS.HmacSHA512(encodedSecret)
+    const hashedChallenge = CryptoJS.HmacSHA512(encodedChallenge)
     // var hash = hmacSha512.ComputeHash(Encoding.ASCII.GetBytes(challenge));
     // return BitConverter.ToString(hash).Replace("-", string.Empty);
   }
