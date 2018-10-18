@@ -13,7 +13,6 @@ class Bittrex extends Exchange {
     super();
     this.exchangeName = 'bittrex';
     this.marketsUrl = 'https://bittrex.com/api/v1.1/public/getmarkets';
-    this.client;
   }
 
   async getMarket() {
@@ -42,50 +41,35 @@ class Bittrex extends Exchange {
     }
   }
 
-  createSignature(apiSecret, challenge) {
-    const encodedSecret = new Buffer(apiSecret, "ascii")
-    const encodedChallenge = new Buffer(challenge, "ascii")
-    const hashedSecret = CryptoJS.HmacSHA512(encodedSecret)
-    const hashedChallenge = CryptoJS.HmacSHA512(encodedChallenge)
-    // var hash = hmacSha512.ComputeHash(Encoding.ASCII.GetBytes(challenge));
-    // return BitConverter.ToString(hash).Replace("-", string.Empty);
-  }
+  initOrderDelta() {
 
-  initOrderBook(market) {
-    console.log("Bittrex init order book");
     this.client = new signalR.client (
       'wss://beta.bittrex.com/signalr',
       ['c2']
     );
 
+    const boundSignature = this.createSignature.bind(this);
     const self = this;
-    const boundParser = this.parseOrderDelta.bind(this);
-    const boundInitExchangeDelta = this.initExchangeDelta.bind(this);
-
     self.client.serviceHandlers.connected = function (connection) {
       console.log ('connected');
 
+      const apiKey = process.env.BITTREX_API_KEY
       self.client.call ('c2', 'GetAuthContext', apiKey).done (function (err, challenge) {
-        if (err) { return console.log(err); }
-        if (challenge === true) {
+        if (err) { console.log("GetAuthContext error: ", err); }
+        if (challenge) {
+          const apiSecret = process.env.BITTREX_SECRET
           console.log ('Challenge: ' + challenge);
-          const signature = this.createSignature(apiSecret, challenge)
-          self.client.call ('c2', 'Authenticate', apiSecret, ).done (function (err, result) {
-            if (err) { return console.log(err); }
-            if (result === true) {
-              console.log ('Worked?');
+          const signature = boundSignature(apiSecret, challenge)
+          console.log("What is signature", signature)
+          self.client.call ('c2', 'Authenticate', apiKey, signature).done (function (err, result) {
+            if (err) { console.log("Error during Authenticate: ", err); }
+            if (result) {
+              console.log ('Worked?', result);
             }
           });
         }
       });
-      self.client.call ('c2', 'QueryExchangeState', market).done (function (err, result) {
-        if (err) { return console.log(err); }
-        if (result === true) {
-          console.log ('Subscribed to ' + market);
-        }
-      });
     }
-
     self.client.serviceHandlers.connectFailed = (err) => {
       console.log("Bittrex Connect Failed", err);
     }
@@ -101,6 +85,71 @@ class Bittrex extends Exchange {
     self.client.serviceHandlers.onclose = () => {
       console.log("Bittrex Websocket close");
     }
+
+    self.client.serviceHandlers.messageReceived = function (message) {
+      console.log("Message: ", message)
+      let data = jsonic (message.utf8Data);
+      let json;
+
+      if (data.hasOwnProperty('M') && data['M'][0] && data['M'][0].hasOwnProperty('A')) {
+        console.log("Got props")
+        let b64 = data.M[0].A[0];
+
+        let raw = new Buffer.from(b64, 'base64');
+        zlib.inflateRaw (raw, function (err, inflated) {
+          if (! err) {
+            let json = JSON.parse (inflated.toString ('utf8'));
+            console.log("Order has  arrived: ", json)
+          }
+        });
+      }
+    }
+  }
+
+  createSignature(apiSecret, challenge) {
+    const encodedSecret = new Buffer(apiSecret, "ascii")
+    const encodedChallenge = new Buffer(challenge, "ascii")
+    console.log("Encoded secret: ", encodedSecret)
+    const sigBuffer = CryptoJS.HmacSHA512(challenge, apiSecret)
+    const signature = sigBuffer.toString().replace('-', '')
+    return signature
+  }
+
+  initOrderBook(market) {
+
+    this.client = new signalR.client (
+      'wss://beta.bittrex.com/signalr',
+      ['c2']
+    );
+
+    console.log("Bittrex init order book");
+
+    const self = this;
+    const boundParser = this.parseOrderDelta.bind(this);
+    const boundInitExchangeDelta = this.initExchangeDelta.bind(this);
+
+
+    self.client.call ('c2', 'QueryExchangeState', market).done (function (err, result) {
+      if (err) { return console.log(err); }
+      if (result === true) {
+        console.log ('Subscribed to ' + market);
+      }
+    });
+  }
+
+  initExchangeDelta(market) {
+
+    const self = this;
+    const boundParser = this.parseOrderDelta.bind(this);
+
+
+    self.client.call ('c2', 'SubscribeToExchangeDeltas', market).done (function (err, result) {
+      if (err) { return console.log (err); }
+      if (result === true) {
+        console.log ('Subscribed to ' + market);
+      }
+    });
+
 
     self.client.serviceHandlers.messageReceived = function (message) {
 
@@ -121,20 +170,6 @@ class Bittrex extends Exchange {
         });
       }
     }
-  }
-
-  initExchangeDelta(market) {
-
-    const self = this;
-    const boundParser = this.parseOrderDelta.bind(this);
-
-
-    self.client.call ('c2', 'SubscribeToExchangeDeltas', market).done (function (err, result) {
-      if (err) { return console.log (err); }
-      if (result === true) {
-        console.log ('Subscribed to ' + market);
-      }
-    });
 
 
     self.client.serviceHandlers.messageReceived = function (message) {

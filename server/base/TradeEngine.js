@@ -8,8 +8,8 @@ const log = require ('ololog').configure ({ locate: false })
 
 let masterBook = {}
 let exchange = new ccxt.bittrex ({
-    'apiKey': '',
-    'secret': '',
+    'apiKey': process.env.BITTREX_API_KEY,
+    'secret': process.env.BITTREX_SECRET,
     'verbose': false, // set to true to see more debugging output
     'timeout': 60000,
     'enableRateLimit': true, // add this
@@ -32,13 +32,15 @@ const initialize = async () => {
     return acc
   }, {})
   const main = new Bittrex()
-  main.initOrderBook('BTC-ETH')
-  setTimeout(() => {
-    markets.forEach(market => {
-      const starter = new Bittrex()
-      starter.initOrderBook(market)
-    })
-  }, 2000)
+  main.initOrderDelta()
+  // TODO: NEED RETRY AND AWAIT MECHANISM
+  // setTimeout(() => main.initOrderBook('BTC-ETH'), 3000)
+  // setTimeout(() => {
+  //   markets.forEach(market => {
+  //     const starter = new Bittrex()
+  //     starter.initOrderBook(market)
+  //   })
+  // }, 3000)
 
   emitter.on('ORDER_BOOK_INIT', initialBook)
   emitter.on('ORDER_UPDATE', updateOrderBook)
