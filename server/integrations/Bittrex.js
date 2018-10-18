@@ -13,6 +13,10 @@ class Bittrex extends Exchange {
     super();
     this.exchangeName = 'bittrex';
     this.marketsUrl = 'https://bittrex.com/api/v1.1/public/getmarkets';
+    this.client = new signalR.client (
+      'wss://beta.bittrex.com/signalr',
+      ['c2']
+    );
   }
 
   async getMarket() {
@@ -42,11 +46,6 @@ class Bittrex extends Exchange {
   }
 
   initOrderDelta() {
-
-    this.client = new signalR.client (
-      'wss://beta.bittrex.com/signalr',
-      ['c2']
-    );
 
     const boundSignature = this.createSignature.bind(this);
     const self = this;
@@ -87,7 +86,6 @@ class Bittrex extends Exchange {
     }
 
     self.client.serviceHandlers.messageReceived = function (message) {
-      console.log("Message: ", message)
       let data = jsonic (message.utf8Data);
       let json;
 
@@ -117,42 +115,22 @@ class Bittrex extends Exchange {
 
   initOrderBook(market) {
 
-    this.client = new signalR.client (
-      'wss://beta.bittrex.com/signalr',
-      ['c2']
-    );
-
-    console.log("Bittrex init order book");
+      console.log("Bittrex init order book", market);
 
     const self = this;
-    const boundParser = this.parseOrderDelta.bind(this);
+    const boundParser = this.parseMarketDelta.bind(this);
     const boundInitExchangeDelta = this.initExchangeDelta.bind(this);
 
 
-    self.client.call ('c2', 'QueryExchangeState', market).done (function (err, result) {
-      if (err) { return console.log(err); }
-      if (result === true) {
-        console.log ('Subscribed to ' + market);
-      }
+    self.client.call('c2', 'QueryExchangeState', market).done(function (err, result) {
+        if (err) { console.log(err) }
+
+        if (result === true) {
+          console.log ('Subscribed to ' + market)
+        }
     });
-  }
-
-  initExchangeDelta(market) {
-
-    const self = this;
-    const boundParser = this.parseOrderDelta.bind(this);
-
-
-    self.client.call ('c2', 'SubscribeToExchangeDeltas', market).done (function (err, result) {
-      if (err) { return console.log (err); }
-      if (result === true) {
-        console.log ('Subscribed to ' + market);
-      }
-    });
-
 
     self.client.serviceHandlers.messageReceived = function (message) {
-
       let data = jsonic (message.utf8Data);
       let json;
 
@@ -170,7 +148,19 @@ class Bittrex extends Exchange {
         });
       }
     }
+  }
 
+  initExchangeDelta(market) {
+
+    const self = this;
+    const boundParser = this.parseMarketDelta.bind(this);
+
+    self.client.call ('c2', 'SubscribeToExchangeDeltas', market).done (function (err, result) {
+      if (err) { return console.log (err); }
+      if (result === true) {
+        console.log ('Subscribed to ' + market);
+      }
+    });
 
     self.client.serviceHandlers.messageReceived = function (message) {
       let data = jsonic (message.utf8Data);
@@ -189,7 +179,7 @@ class Bittrex extends Exchange {
               zlib.inflateRaw (raw, function (err, inflated) {
                 if (! err) {
                   json = JSON.parse(inflated.toString ('utf8'));
-                  boundParser('ORDER_DELTA', json, market);
+                  boundParser('MARKET_DELTA', json, market);
                 }
               });
             }
@@ -200,11 +190,15 @@ class Bittrex extends Exchange {
   }
 
   parseOrderDelta(type, orderDelta, market) {
-    if (type === 'ORDER_BOOK_INIT' && orderDelta['Z'] && orderDelta['S']) {
-      const sortedBids = orderDelta['Z'].sort((a, b) => {
+
+  }
+
+  parseMarketDelta(type, marketDelta, market) {
+    if (type === 'ORDER_BOOK_INIT' && marketDelta['Z'] && marketDelta['S']) {
+      const sortedBids = marketDelta['Z'].sort((a, b) => {
         return b.R - a.R;
       }).slice(0, this.orderBookDepth);
-      const sortedAsks = orderDelta['S'].sort((a, b) => {
+      const sortedAsks = marketDelta['S'].sort((a, b) => {
         return a.R - b.R;
       }).slice(0, this.orderBookDepth);
       const bids = sortedBids.reduce((aggregator, bid) => {
@@ -236,26 +230,26 @@ class Bittrex extends Exchange {
       }
       this.emitOrderBook(initOrderBook);
     }
-    if (type === 'ORDER_DELTA' && orderDelta['Z'] && orderDelta['S']) {
-      orderDelta['Z'].forEach(change => {
-        let orderDelta = {
+    if (type === 'MARKET_DELTA' && marketDelta['Z'] && marketDelta['S']) {
+      marketDelta['Z'].forEach(change => {
+        let marketDelta = {
           type: 'BID_UPDATE',
           market: market,
           rateString: this.exchangeName + market + change.R.toString(),
           rate: change.R,
           amount: parseFloat(change.Q)
         }
-        this.emitOrderBook(orderDelta);
+        this.emitOrderBook(marketDelta);
       });
-      orderDelta['S'].forEach(change => {
-        let orderDelta = {
+      marketDelta['S'].forEach(change => {
+        let marketDelta = {
           type: 'ASK_UPDATE',
           market: market,
           rateString: this.exchangeName + market + change.R.toString(),
           rate: change.R,
           amount: parseFloat(change.Q)
         }
-        this.emitOrderBook(orderDelta);
+        this.emitOrderBook(marketDelta);
       });
 
     }

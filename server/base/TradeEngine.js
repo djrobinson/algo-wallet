@@ -15,7 +15,7 @@ let exchange = new ccxt.bittrex ({
     'enableRateLimit': true, // add this
 })
 
-const markets = ['ETH-LTC', 'ETH-REP', 'BTC-ETH', 'BTC-LTC', 'BTC-ZEC']
+const markets = ['ETH-LTC', 'ETH-REP', 'BTC-LTC', 'BTC-ZEC']
 
 
 let currentBalances = {}
@@ -34,16 +34,15 @@ const initialize = async () => {
   const main = new Bittrex()
   main.initOrderDelta()
   // TODO: NEED RETRY AND AWAIT MECHANISM
-  // setTimeout(() => main.initOrderBook('BTC-ETH'), 3000)
-  // setTimeout(() => {
-  //   markets.forEach(market => {
-  //     const starter = new Bittrex()
-  //     starter.initOrderBook(market)
-  //   })
-  // }, 3000)
+  setTimeout(() => main.initOrderBook('BTC-ETH'), 3000)
+  setTimeout(() => {
+    markets.forEach(market => {
+      main.initOrderBook(market)
+    })
+  }, 6000)
 
   emitter.on('ORDER_BOOK_INIT', initialBook)
-  emitter.on('ORDER_UPDATE', updateOrderBook)
+  emitter.on('MARKET_UPDATE', updateOrderBook)
 }
 
 const calculateAmount = (base, alt, side, rate) => {
@@ -51,7 +50,6 @@ const calculateAmount = (base, alt, side, rate) => {
     const fee = currentBalances[base].free * .0025
     const altAmount = (currentBalances[base].free - fee) / rate
     const minimum = marketInfo[base + '-' + alt].limits.amount.min
-    console.log("We getting the right minmum??", minimum < altAmount)
     if (minimum < altAmount) {
       return altAmount
     }
@@ -60,7 +58,7 @@ const calculateAmount = (base, alt, side, rate) => {
   if (side === 'sell') {
     const fee = currentBalances[alt].free * .0025
     const baseAmount = (currentBalances[alt].free - fee) / rate
-    const minimum = marketInfo[base + '-' + alt].limits.amounts.min * rate
+    const minimum = marketInfo[base + '-' + alt].limits.amount.min * rate
     if (minimum > baseAmount) {
       return baseAmount
     }
@@ -98,12 +96,12 @@ const orderWorkflow = async (pair, side, rate) => {
 // TODO: REFORM EVENTS TO "INDICATOR_EVENT" INSTEAD OF MARKETBOOK EVENTS
 const runStrategy = async (event) => {
   if (iterator % 10 === 0 && iterator !== 0) {
-    const bidKeys = Object.keys(masterBook[event.market].bids)
-    console.log("Running strategy", event.market, ' ', masterBook[event.market].bids[bidKeys[4]].rate )
+    const askKeys = Object.keys(masterBook[event.market].asks)
+    console.log("Running strategy", event.market, ' ', masterBook[event.market].asks[askKeys[4]].rate )
     const pair = event.market
-    const side = 'buy'
+    const side = 'sell'
     // Choose random bid here
-    const rate = masterBook[pair].bids[bidKeys[4]].rate
+    const rate = masterBook[pair].asks[askKeys[4]].rate
     const result = await orderWorkflow(pair, side, rate)
     log.bright.green( "Order result: ", result )
   }
@@ -172,9 +170,9 @@ const initialBook = (event) => {
 }
 
 const updateOrderBook = (event) => {
-  const market = event.market
 
-  var orderUpdateInstance = new OrderUpdate(event)
+  const market = event.market
+  // var orderUpdateInstance = new OrderUpdate(event)
 
   // orderUpdateInstance.save((err) => {
   //   if (err) console.log("There was an error saving order instance")
@@ -223,6 +221,8 @@ const updateOrderBook = (event) => {
             return book[a].rate - book[b].rate
           }
         })
+        // FOR TESTING ONLY
+        recalculate = true
         // Run strategy if there is a change in bid price
         if (type === 'bids') {
           if (book[sortedBook[0]].rate != masterBook[market].highestBid) {
@@ -230,7 +230,7 @@ const updateOrderBook = (event) => {
             if (book[sortedBook[0]].rate > masterBook[market].highestBid) {
               masterBook[market].highestBid = book[sortedBook[0]].rate
             }
-            recalculate = true
+            // recalculate = true
           }
         }
         // Run strategy if there is a change in ask price
@@ -240,7 +240,7 @@ const updateOrderBook = (event) => {
             if (book[sortedBook[0]].rate < masterBook[market].lowestAsk) {
               masterBook[market].lowestAsk = book[sortedBook[0]].rate
             }
-            recalculate = true
+            // recalculate = true
           }
         }
         const newBook = {}

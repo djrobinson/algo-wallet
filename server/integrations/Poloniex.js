@@ -61,7 +61,7 @@ class Poloniex extends Exchange {
 
     socket.onmessage = msg => {
       if (msg && msg.data) {
-        this.parseOrderDelta(msg.data, market);
+        this.parseMarketDelta(msg.data, market);
       }
     }
 
@@ -70,8 +70,8 @@ class Poloniex extends Exchange {
     };
   }
 
-  parseOrderDelta(orderDelta, market) {
-    const data = JSON.parse(orderDelta);
+  parseMarketDelta(marketDelta, market) {
+    const data = JSON.parse(marketDelta);
     if (data && data[2] && data[2][0] && data[2][0][1] && data[2][0][1].hasOwnProperty('orderBook')) {
       // Initial Response:
       let initOrderBook = {

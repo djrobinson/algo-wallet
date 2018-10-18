@@ -41,7 +41,7 @@ class ExchangeAggregator {
     const boundCallback = callback.bind(this);
     this.exchanges.forEach(exchange => this.subscriptions[exchange].initOrderBook(market))
     emitter.on('ORDER_BOOK_INIT', (event) => { this.mergeOrderBooks(market, event, boundCallback) })
-    emitter.on('ORDER_UPDATE', (event) => {
+    emitter.on('MARKET_UPDATE', (event) => {
       this.updateOrderBook(event, market);
     });
     emitter.on('WS_ERROR', (event) => {

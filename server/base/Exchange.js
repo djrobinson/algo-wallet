@@ -22,7 +22,7 @@ class Exchange {
       } else if (order.type === 'WS_ERROR') {
         emitter.emit(order.type, order);
       } else {
-        emitter.emit('ORDER_UPDATE', order);
+        emitter.emit('MARKET_UPDATE', order);
       }
   }
 
