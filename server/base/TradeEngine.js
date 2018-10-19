@@ -34,12 +34,12 @@ const initialize = async () => {
   const main = new Bittrex()
   main.initOrderDelta()
   // TODO: NEED RETRY AND AWAIT MECHANISM
-  setTimeout(() => main.initOrderBook('BTC-ETH'), 3000)
-  setTimeout(() => {
-    markets.forEach(market => {
-      main.initOrderBook(market)
-    })
-  }, 6000)
+  // setTimeout(() => main.initOrderBook('BTC-ETH'), 3000)
+  // setTimeout(() => {
+  //   markets.forEach(market => {
+  //     main.initOrderBook(market)
+  //   })
+  // }, 6000)
 
   emitter.on('ORDER_BOOK_INIT', initialBook)
   emitter.on('MARKET_UPDATE', updateOrderBook)
@@ -57,9 +57,10 @@ const calculateAmount = (base, alt, side, rate) => {
   }
   if (side === 'sell') {
     const fee = currentBalances[alt].free * .0025
-    const baseAmount = (currentBalances[alt].free - fee) / rate
+    const baseAmount = (currentBalances[alt].free - fee)
+    console.log("What is baseAmount: ", baseAmount)
     const minimum = marketInfo[base + '-' + alt].limits.amount.min * rate
-    if (minimum > baseAmount) {
+    if (minimum < baseAmount) {
       return baseAmount
     }
     return null

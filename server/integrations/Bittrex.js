@@ -49,7 +49,7 @@ class Bittrex extends Exchange {
 
     const boundSignature = this.createSignature.bind(this);
     const self = this;
-    self.client.serviceHandlers.connected = function (connection) {
+    this.client.serviceHandlers.connected = function (connection) {
       console.log ('connected');
 
       const apiKey = process.env.BITTREX_API_KEY
@@ -69,11 +69,12 @@ class Bittrex extends Exchange {
         }
       });
     }
-    self.client.serviceHandlers.connectFailed = (err) => {
+
+    this.client.serviceHandlers.connectFailed = (err) => {
       console.log("Bittrex Connect Failed", err);
     }
 
-    self.client.serviceHandlers.onerror = (err) => {
+    this.client.serviceHandlers.onerror = (err) => {
       console.log("Bittrex WS Error", err);
       this.emitOrderBook({
         type: 'WS_ERROR',
@@ -81,11 +82,11 @@ class Bittrex extends Exchange {
       });
     }
 
-    self.client.serviceHandlers.onclose = () => {
+    this.client.serviceHandlers.onclose = () => {
       console.log("Bittrex Websocket close");
     }
 
-    self.client.serviceHandlers.messageReceived = function (message) {
+    this.client.serviceHandlers.messageReceived = function (message) {
       let data = jsonic (message.utf8Data);
       let json;
 
@@ -115,14 +116,14 @@ class Bittrex extends Exchange {
 
   initOrderBook(market) {
 
-      console.log("Bittrex init order book", market);
+    console.log("Bittrex init order book", market);
 
-    const self = this;
+
     const boundParser = this.parseMarketDelta.bind(this);
     const boundInitExchangeDelta = this.initExchangeDelta.bind(this);
 
 
-    self.client.call('c2', 'QueryExchangeState', market).done(function (err, result) {
+    this.client.call('c2', 'QueryExchangeState', market).done(function (err, result) {
         if (err) { console.log(err) }
 
         if (result === true) {
@@ -130,7 +131,7 @@ class Bittrex extends Exchange {
         }
     });
 
-    self.client.serviceHandlers.messageReceived = function (message) {
+    this.client.serviceHandlers.messageReceived = function (message) {
       let data = jsonic (message.utf8Data);
       let json;
 
@@ -152,17 +153,17 @@ class Bittrex extends Exchange {
 
   initExchangeDelta(market) {
 
-    const self = this;
+
     const boundParser = this.parseMarketDelta.bind(this);
 
-    self.client.call ('c2', 'SubscribeToExchangeDeltas', market).done (function (err, result) {
+    this.client.call ('c2', 'SubscribeToExchangeDeltas', market).done (function (err, result) {
       if (err) { return console.log (err); }
       if (result === true) {
         console.log ('Subscribed to ' + market);
       }
     });
 
-    self.client.serviceHandlers.messageReceived = function (message) {
+    this.client.serviceHandlers.messageReceived = function (message) {
       let data = jsonic (message.utf8Data);
       let json;
       if (data.hasOwnProperty ('M')) {
