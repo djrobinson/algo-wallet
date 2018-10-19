@@ -32,14 +32,15 @@ const initialize = async () => {
     return acc
   }, {})
   const main = new Bittrex()
-  main.initOrderDelta()
   // TODO: NEED RETRY AND AWAIT MECHANISM
-  // setTimeout(() => main.initOrderBook('BTC-ETH'), 3000)
-  // setTimeout(() => {
-  //   markets.forEach(market => {
-  //     main.initOrderBook(market)
-  //   })
-  // }, 6000)
+  main.initOrderDelta()
+  setTimeout(() => main.initOrderBook('BTC-ETH'), 3000)
+  setTimeout(() => {
+    markets.forEach(market => {
+      main.initOrderBook(market)
+    })
+  }, 6000)
+
 
   emitter.on('ORDER_BOOK_INIT', initialBook)
   emitter.on('MARKET_UPDATE', updateOrderBook)
