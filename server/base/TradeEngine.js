@@ -1,6 +1,7 @@
 "use strict"
 
 const Bittrex = require('../integrations/Bittrex')
+const ExchangeAggregator = require('./ExchangeAggregator');
 const { emitter } = require('./Exchange')
 const OrderUpdate = require('../db/models/orderUpdate.model');
 const ccxt = require ('ccxt')
@@ -49,13 +50,17 @@ const start = async (tradeEngineCallback) => {
   emitter.on('MARKET_UPDATE', updatePriceAndRunStrategy)
   emitter.on('ORDER_DELTA', handleOrderDelta)
 
-  emitter.on('ORDER_BOOK_INIT', tradeEngineCallback)
-  emitter.on('MARKET_UPDATE', tradeEngineCallback)
-  emitter.on('ORDER_DELTA', tradeEngineCallback)
+  const boundCb = tradeEngineCallback.bind(this)
+  setInterval(() => {
+    boundCb(masterBook)
+  }, 5000)
+
 }
 
 const stop = () => {
-  main.stopOrderBook()
+  if (main) {
+    main.stopOrderBook()
+  }
 }
 
 const calculateAmount = (base, alt, side, rate) => {

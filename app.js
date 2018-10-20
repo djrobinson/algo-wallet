@@ -35,6 +35,7 @@ io.on('connection', client => {
   };
 
   const tradeEngineCallback = msg => {
+    console.log("Wwkjelfjwoiejfiow, ", msg)
     client.emit('ENGINE_EVENT', msg)
   }
 

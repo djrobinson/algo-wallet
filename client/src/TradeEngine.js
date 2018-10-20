@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { Col, Row, Button } from 'react-bootstrap';
 import numeral from 'numeral';
 import openSocket from 'socket.io-client';
+import OrderBook from './OrderBook';
 import './TradeEngine.css';
 
 class TradeEngine extends Component {
@@ -11,8 +12,9 @@ class TradeEngine extends Component {
     this.startSocket = this.startSocket.bind(this)
   }
   state = {
-    markets: {},
+    markets: [],
     orders: {},
+    test: ''
   }
 
   socket = null;
@@ -43,7 +45,10 @@ class TradeEngine extends Component {
     this.socket.emit('startEngine', {});
 
     this.socket.on('ENGINE_EVENT', (message) => {
-        console.log("Engine event: ", message);
+      this.setState({ [message.market]: message})
+      console.log("Getting order book init: ", this.state)
+      this.setState({markets: [...this.state.markets, message.market]})
+
     });
   }
 
@@ -59,9 +64,24 @@ class TradeEngine extends Component {
           <h1>TradeEngine Here!</h1>
         </Row>
         <Row>
-
           <Button onClick={this.startSocket}>Start The Trades!</Button>
           <Button onClick={this.stopSocket}>Stop The Trades</Button>
+        </Row>
+        <Row>
+          {
+            this.state.markets.map((market) => {
+              return (
+                <Col md={4}>
+                  <h1>{market}</h1>
+                  <OrderBook
+                    market={market}
+                    bids={this.state[market].bids}
+                    asks={this.state[market].asks}
+                  />
+                </Col>
+              )
+            })
+          }
         </Row>
       </div>
     );

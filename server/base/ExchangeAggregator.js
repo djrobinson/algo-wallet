@@ -21,6 +21,7 @@ class ExchangeAggregator {
       exchanges.forEach(exchangeName => {
         this.exchanges.push(exchangeName);
         const instantiatedExchange = new availableExchanges[exchangeName]();
+        instantiatedExchange.initOrderDelta();
         this.subscriptions[exchangeName] = instantiatedExchange;
       })
     }

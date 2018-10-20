@@ -12,11 +12,7 @@ class App extends Component {
   }
 
   componentDidMount() {
-    fetch('/test')
-      .then(res => res.json())
-      .then(data => {
-        this.setState({ test: data.test })
-      });
+
   }
 
   render() {

@@ -10,29 +10,18 @@ class OrderBook extends Component {
     highestBid: null,
     bids: {},
     asks: {},
-    poloniexStatus: 'Pending...',
-    bittrexStatus: 'Pending...',
-    showRetry: false,
     arbitragePercentage: 0
   }
 
   socket = null;
 
   componentDidMount() {
-    this.startSocket();
+    console.log("This.props: ", this.props)
   }
 
-  componentDidUpdate(prevProps, prevState) {
-    if (prevProps.market !== this.props.market) {
-      this.setState({ bids: {}, asks: {}, lowestAsk: null, highestBid: null})
-      this.startSocket();
-    }
-  }
 
   componentWillUnmount() {
-    if (this.socket) {
-      this.socket.disconnect();
-    }
+
   }
 
   startSocket() {
@@ -52,9 +41,9 @@ class OrderBook extends Component {
       highestBid: null
     });
 
-    this.socket = openSocket();
+    // this.socket = openSocket();
 
-    this.socket.emit('startMarket', { market });
+    // this.socket.emit('startMarket', { market });
 
     this.socket.on('orderbook', (message) => {
       let data = JSON.parse(message);
@@ -144,26 +133,8 @@ class OrderBook extends Component {
     return (
       <div className="order-book">
         <Row>
-          <Col md={4}>
+          <Col md={12}>
             <h1>{this.props.market} Order Book</h1>
-            <h3>Exchange Status</h3>
-            <h4>Bittrex: {this.state.bittrexStatus}</h4>
-            <h4>Poloniex: {this.state.poloniexStatus}</h4>
-            {
-              (!!this.state.showRetry) && (
-                <Button bsStyle="primary" onClick={this.startSocket.bind(this)}>Retry Connection</Button>
-              )
-            }
-          </Col>
-          <Col md={4}>
-            <h2>Arbitrage Opportunity</h2>
-            <div className={parseFloat(this.state.arbitragePercentage) > 0 ? "positive arb-percent" : "negative arb-percent"}>
-              <span>{this.state.arbitragePercentage}</span>
-            </div>
-          </Col>
-          <Col md={4}>
-            <h3>Lowest Ask: {this.state.lowestAsk}</h3>
-            <h3>Highest Bid: {this.state.highestBid}</h3>
           </Col>
         </Row>
         <Row>
@@ -175,15 +146,14 @@ class OrderBook extends Component {
               <Col md={4}><span>Bid Rate</span></Col>
             </Row>
 
-            { (this.state.bids && Object.keys(this.state.bids)[0]) &&
-              (Object.keys(this.state.bids).map((bid, i) => {
-                const overlapClass = this.state.lowestAsk < this.state.bids[bid].rate ? " overlap" : ""
+            { (this.props.bids && Object.keys(this.props.bids)[0]) &&
+              (Object.keys(this.props.bids).map((bid, i) => {
                 if (bid.market === this.market) {
                   return (
-                    <Row key={i} className={this.state.bids[bid].exchange + overlapClass + " order-row bid-row"}>
-                      <Col md={4}><span className="exchange-name">{this.state.bids[bid].exchange}</span></Col>
-                      <Col md={4}><span>{numeral(this.state.bids[bid].amount).format('0.00000000')}</span></Col>
-                      <Col md={4}><span>{numeral(this.state.bids[bid].rate).format('0.00000000')}</span></Col>
+                    <Row key={i}>
+                      <Col md={4}><span className="exchange-name">{this.props.bids[bid].exchange}</span></Col>
+                      <Col md={4}><span>{numeral(this.props.bids[bid].amount).format('0.00000000')}</span></Col>
+                      <Col md={4}><span>{numeral(this.props.bids[bid].rate).format('0.00000000')}</span></Col>
                     </Row>
 
                   );
@@ -196,7 +166,7 @@ class OrderBook extends Component {
               }))
             }
             {
-              (!this.state.bids || !Object.keys(this.state.bids)[0]) && <h2>Loading...</h2>
+              (!this.props.bids || !Object.keys(this.props.bids)[0]) && <h2>Loading...</h2>
             }
           </Col>
           <Col md={6}>
@@ -207,21 +177,21 @@ class OrderBook extends Component {
               <Col md={4}><span>Exchange</span></Col>
             </Row>
             {
-              (this.state.asks && Object.keys(this.state.asks)[0]) &&
-              (Object.keys(this.state.asks).map((ask, i) => {
-                const overlapClass = this.state.highestBid > this.state.asks[ask].rate ? " overlap" : ""
+              (this.props.asks && Object.keys(this.props.asks)[0]) &&
+              (Object.keys(this.props.asks).map((ask, i) => {
+                const overlapClass = this.props.highestBid > this.props.asks[ask].rate ? " overlap" : ""
                 isOverlap = overlapClass;
                 return (
-                  <Row key={i} className={this.state.asks[ask].exchange + overlapClass + " order-row ask-row"}>
-                    <Col md={4}><span>{numeral(this.state.asks[ask].rate).format('0.00000000')}</span></Col>
-                    <Col md={4}><span>{numeral(this.state.asks[ask].amount).format('0.00000000')}</span></Col>
-                    <Col md={4}><span className="exchange-name">{this.state.asks[ask].exchange}</span></Col>
+                  <Row key={i} className={this.props.asks[ask].exchange + overlapClass + " order-row ask-row"}>
+                    <Col md={4}><span>{numeral(this.props.asks[ask].rate).format('0.00000000')}</span></Col>
+                    <Col md={4}><span>{numeral(this.props.asks[ask].amount).format('0.00000000')}</span></Col>
+                    <Col md={4}><span className="exchange-name">{this.props.asks[ask].exchange}</span></Col>
                   </Row>
                 );
               }))
             }
             {
-              (!this.state.asks || !Object.keys(this.state.asks)[0]) && <h2>Loading...</h2>
+              (!this.props.asks || !Object.keys(this.props.asks)[0]) && <h2>Loading...</h2>
             }
           </Col>
         </Row>
