@@ -8,25 +8,26 @@ const ccxt = require ('ccxt')
 const log = require ('ololog').configure ({ locate: false })
 
 let masterBook = {}
-let exchange
-let runType
-let currentBalances = {}
-let pendingOrder = false
-let openOrders = []
-let iterator = 0
-let marketInfo = {}
-// This "main" will be replaced by an exchange agg at some point
-let main
 
-const start = async (tradeEngineCallback, selectedRunType, markets, exchanges) => {
-  runType = selectedRunType
-  exchange = new ccxt.bittrex ({
+let exchange = new ccxt.bittrex ({
     'apiKey': process.env.BITTREX_API_KEY,
     'secret': process.env.BITTREX_SECRET,
     'verbose': false, // set to true to see more debugging output
     'timeout': 60000,
     'enableRateLimit': true, // add this
   })
+let runType = 'ON_PRICE_CHANGE'
+let currentBalances = {}
+let pendingOrder = false
+let openOrders = []
+let iterator = 0
+let marketInfo = {}
+
+const maxOrderDepth = 50
+// This "main" will be replaced by an exchange agg at some point
+let main
+
+const start = async (tradeEngineCallback, markets, exchanges) => {
   getBalances()
   const marketArray = await exchange.fetchMarkets()
   marketInfo = marketArray.reduce((acc, market) => {
@@ -49,7 +50,6 @@ const start = async (tradeEngineCallback, selectedRunType, markets, exchanges) =
   emitter.on('ORDER_DELTA', handleOrderDelta)
 
   const boundCb = tradeEngineCallback.bind(this)
-  emitter.on('ORDER_BOOK_INIT', boundCb)
   setInterval(() => {
     markets.forEach(market => {
       boundCb({
@@ -57,7 +57,7 @@ const start = async (tradeEngineCallback, selectedRunType, markets, exchanges) =
         ...masterBook[market]
       })
     })
-  }, 2000)
+  }, 5000)
 }
 
 const stop = () => {
@@ -136,7 +136,7 @@ const runStrategy = async (event) => {
   const result = await orderWorkflow(pair, side, rate)
   log.bright.green( "Order result: ", result )
 
-  iterator++;
+  iterator++
 }
 
 const getBalances = async () => {
@@ -186,22 +186,22 @@ const cancelOrder = async (id) => {
 }
 
 const handleOrderDelta = (delta) => {
-  console.log("We got an order delta!!!: ", delta)
   if (delta.type === 'OPEN') {
     openOrders.push(delta)
   }
   if (delta.type === 'CANCEL') {
     const asdf = openOrders.filter(o => (o.uuid !== delta.uuid))
-    console.log("Did we filter out that order? ", asdf)
   }
 }
 
 const initialize = (event) => {
+  console.log("Initializing: ", event.market)
   masterBook[event.market] = {}
   masterBook[event.market].bids = event.bids
   masterBook[event.market].asks = event.asks
-  masterBook[event.market].highestBid = event.bids[Object.keys(event.bids)[0]].rate
-  masterBook[event.market].lowestAsk = event.asks[Object.keys(event.asks)[0]].rate
+  masterBook[event.market].summary = {}
+  masterBook[event.market].summary.highestBid = event.bids[Object.keys(event.bids)[0]]
+  masterBook[event.market].summary.lowestAsk = event.asks[Object.keys(event.asks)[0]]
 }
 
 const updatePriceAndRunStrategy = (event) => {
@@ -234,15 +234,19 @@ const updatePriceAndRunStrategy = (event) => {
     if (book) {
       let newBook, oldBook
       [newBook, oldBook] = maintainOrderBook(book, identifier, exchange, type, market, rate, amount)
-      const isPriceChange = checkPriceAndVolume(market, type, newBook, oldBook)
+      const newSummary = checkPriceAndVolume(type, newBook, oldBook)
+      const isPriceChange = newSummary.isPriceChange
+
       if (runType === 'ON_PRICE_CHANGE' && isPriceChange) {
         console.log("PRICE CHANGE")
         recalculate = true
       }
-      // if (runType === 'ON_MARKET_CHANGE') {
-      //   recalculate = true
-      // }
+      if (runType === 'ON_MARKET_CHANGE') {
+        recalculate = true
+      }
+      masterBook[market].summary = newSummary
       masterBook[market][type] = newBook
+
       if (recalculate) {
         runStrategy(event)
       }
@@ -294,32 +298,56 @@ const maintainOrderBook = (book, identifier, exchange, type, market, rate, amoun
   return [newBook, book]
 }
 
-const checkPriceAndVolume = (market, type, newBook, oldBook) => {
+const checkPriceAndVolume = (type, newBook, oldBook) => {
+  // Return orderBook summary here. Will be saved periodically
+  // Will also be analyzed based on run strategy settings (potentially everyupdate)
+  const newKeys = Object.keys(newBook)
+  const oldKeys = Object.keys(oldBook)
+
+  let summary = {}
+  summary.isPriceChange = false
+
   if (type === 'bids') {
-    const newBidString = Object.keys(newBook)[0]
-    const oldBidString = Object.keys(oldBook)[0]
+    const newBidString = newKeys[0]
+    const oldBidString = oldKeys[0]
     const newBid = newBook[newBidString]
     const oldBid = oldBook[oldBidString]
 
     if (newBid != oldBid) {
-      masterBook[market].highestBid = newBid
-      return true
+
+      summary.isPriceChange = true
     }
-    return false
+    summary.highestBid = newBid
+    summary.bidVolumeAt50Orders = tallyVolumeStats(newBook, newKeys)
+    // Check volume details
+    // Determine total offer sizes at each pricepoint, cut down to maxOrderDepth if needed
+    // Determine time (use Date.now() to group into minute categories)
+    // Check against last summary to determine how much it has changed
+    // If it is past a certain interval
+
+
   }
   if (type === 'asks') {
-    const newAskString = Object.keys(newBook)[0]
-    const oldAskString = Object.keys(oldBook)[0]
+    const newAskString = newKeys[0]
+    const oldAskString = oldKeys[0]
     const newAsk = newBook[newAskString]
     const oldAsk = oldBook[oldAskString]
 
     if (newAsk != oldAsk) {
-      masterBook[market].lowestAsk = newAsk
-      return true
+      summary.isPriceChange = true
     }
-    return false
-
+    summary.lowestAsk = newAsk
+    summary.askVolumeAt50Orders = tallyVolumeStats(newBook, newKeys)
   }
+  return summary
+}
+
+const tallyVolumeStats = (book, newKeys) => {
+  const volumeAt50Orders = newKeys.reduce((acc, curr) => {
+
+    return book[curr].amount + acc
+  }, 0)
+  return volumeAt50Orders
 }
 
 module.exports = {start, stop}

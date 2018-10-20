@@ -35,15 +35,14 @@ io.on('connection', client => {
   };
 
   const tradeEngineCallback = msg => {
-    console.log("Wwkjelfjwoiejfiow, ", msg)
     client.emit('ENGINE_EVENT', msg)
   }
 
   client.on('startEngine', req => {
     console.log("What is the req from start engine: ", req)
-    const markets = ['ETH-LTC', 'BTC-ETH']
+    const markets = ['ETH-LTC']
     const exchanges = ['bittrex']
-    start(tradeEngineCallback, 'ON_PRICE_CHANGE', markets, exchanges)
+    start(tradeEngineCallback, markets, exchanges)
   })
 
   client.on('stopEngine', req => {

@@ -93,7 +93,6 @@ class Bittrex extends Exchange {
     orderClient.serviceHandlers.messageReceived = function (message) {
       let data = jsonic (message.utf8Data);
       let json;
-
       if (data.hasOwnProperty ('R')) {
         let b64 = data.R;
 
@@ -101,7 +100,7 @@ class Bittrex extends Exchange {
         zlib.inflateRaw (raw, function (err, inflated) {
           if (! err) {
             let json = JSON.parse (inflated.toString ('utf8'));
-            boundParser('ORDER_BOOK_INIT', json, json.M);
+            boundParser('ORDER_BOOK_INIT', json, json.M)
             // Start only after order book inits
             boundInitExchangeDelta(json.M);
           }
@@ -115,6 +114,7 @@ class Bittrex extends Exchange {
           if (! err) {
             let json = JSON.parse (inflated.toString ('utf8'));
             if (json.hasOwnProperty('M')) {
+
               boundParser('MARKET_DELTA', json, json.M)
             }
             if (json.hasOwnProperty('o')) {
@@ -222,6 +222,7 @@ class Bittrex extends Exchange {
         bids: bids,
         asks: asks
       }
+      console.log("About to init order book: ", market)
       this.emitOrderBook(initOrderBook);
     }
     if (type === 'MARKET_DELTA' && marketDelta['Z'] && marketDelta['S']) {
