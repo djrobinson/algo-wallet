@@ -47,7 +47,7 @@ class OrderBook extends Component {
 
     this.socket.on('orderbook', (message) => {
       let data = JSON.parse(message);
-      if (data.type === 'ORDER_BOOK_INIT' && data.market === market) {
+      if (data.type === ' ' && data.market === market) {
         console.log("Order book init: ", data);
         if (data.exchange === 'poloniex') {
           this.setState({
@@ -149,8 +149,10 @@ class OrderBook extends Component {
             { (this.props.bids && Object.keys(this.props.bids)[0]) &&
               (Object.keys(this.props.bids).map((bid, i) => {
                 if (bid.market === this.market) {
+                  const overlapClass = this.props.lowestAsk > this.props.bids[bid].rate ? " overlap" : ""
+                  isOverlap = overlapClass;
                   return (
-                    <Row key={i}>
+                    <Row key={i} className={this.props.bids[bid].exchange + overlapClass + " order-row bid-row"}>
                       <Col md={4}><span className="exchange-name">{this.props.bids[bid].exchange}</span></Col>
                       <Col md={4}><span>{numeral(this.props.bids[bid].amount).format('0.00000000')}</span></Col>
                       <Col md={4}><span>{numeral(this.props.bids[bid].rate).format('0.00000000')}</span></Col>

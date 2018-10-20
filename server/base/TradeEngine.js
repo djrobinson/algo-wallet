@@ -50,9 +50,17 @@ const start = async (tradeEngineCallback) => {
   emitter.on('MARKET_UPDATE', updatePriceAndRunStrategy)
   emitter.on('ORDER_DELTA', handleOrderDelta)
 
+  emitter.on('ORDER_BOOK_INIT', boundCb)
+
   const boundCb = tradeEngineCallback.bind(this)
   setInterval(() => {
-    boundCb(masterBook)
+    markets.forEach(market => {
+      boundCb({
+        market,
+        ...masterBook[market]
+      })
+    })
+
   }, 5000)
 
 }

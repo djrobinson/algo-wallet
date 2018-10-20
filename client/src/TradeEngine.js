@@ -47,8 +47,9 @@ class TradeEngine extends Component {
     this.socket.on('ENGINE_EVENT', (message) => {
       this.setState({ [message.market]: message})
       console.log("Getting order book init: ", this.state)
-      this.setState({markets: [...this.state.markets, message.market]})
-
+      if (this.state.markets.indexOf(message.market) === -1) {
+        this.setState({markets: [...this.state.markets, message.market]})
+      }
     });
   }
 
@@ -71,7 +72,7 @@ class TradeEngine extends Component {
           {
             this.state.markets.map((market) => {
               return (
-                <Col md={4}>
+                <Col md={4} key={market}>
                   <h1>{market}</h1>
                   <OrderBook
                     market={market}
