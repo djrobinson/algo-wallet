@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { Col, Row } from 'react-bootstrap';
 import OrderBook from './OrderBook';
+import TradeEngine from './TradeEngine';
 import './App.css';
 
 class App extends Component {
@@ -26,11 +27,7 @@ class App extends Component {
             <h1>ALGOWALLET</h1>
           </div>
         </Row>
-        <Row>
-          <Col md={4} className="coin-tiles">
-            { this.state.test }
-          </Col>
-        </Row>
+        <TradeEngine />
       </div>
     );
   }

@@ -9,7 +9,7 @@ const server = require('http').Server(app);
 const io = require('socket.io')(server);
 
 const ExchangeAggregator = require('./server-build/base/ExchangeAggregator');
-const {initialize} = require('./server-build/base/TradeEngine');
+const {start, stop} = require('./server-build/base/TradeEngine');
 const indexRouter = require('./server-build/api/index');
 const bodyParser = require('body-parser');
 
@@ -27,20 +27,33 @@ app.use(express.static(path.join(__dirname, 'client/build')));
 io.on('connection', client => {
   console.log("Connection", client.id);
   const exchanges = ['bittrex', 'poloniex'];
-  exchangeAggregator = new ExchangeAggregator(exchanges);
+  // exchangeAggregator = new ExchangeAggregator(exchanges);
+
 
   const aggregatorCallback = msg => {
     client.emit('orderbook', msg);
   };
 
-  client.on('startMarket', req => {
-    exchangeAggregator.removeAllSubscriptions();
-    exchangeAggregator.subscribeToOrderBooks(req.market, aggregatorCallback);
-  });
+  const tradeEngineCallback = msg => {
+    client.emit('ENGINE_EVENT', msg)
+  }
+
+  // client.on('startMarket', req => {
+  //   exchangeAggregator.removeAllSubscriptions();
+  //   exchangeAggregator.subscribeToOrderBooks(req.market, aggregatorCallback);
+  // });
+
+  client.on('startEngine', req => {
+    start(tradeEngineCallback)
+  })
+
+  client.on('stopEngine', req => {
+    stop()
+  })
 
   client.on('disconnect', req => {
     console.log("Websocket closing");
-    exchangeAggregator.removeAllSubscriptions();
+    // exchangeAggregator.removeAllSubscriptions();
     client.disconnect(true);
   });
 
@@ -52,7 +65,7 @@ io.on('connection', client => {
 
   client.on('end', () => {
     console.log("Websocket closing");
-    exchangeAggregator.removeAllSubscriptions();
+    // exchangeAggregator.removeAllSubscriptions();
     client.disconnect(true);
   });
 });

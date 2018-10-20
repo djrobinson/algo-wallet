@@ -15,7 +15,7 @@ let exchange = new ccxt.bittrex ({
     'enableRateLimit': true, // add this
 })
 
-const markets = ['ETH-LTC', 'ETH-REP', 'BTC-LTC', 'BTC-ZEC']
+const markets = ['ETH-LTC']
 
 
 let currentBalances = {}
@@ -24,15 +24,17 @@ let openOrders = []
 let iterator = 0
 let marketInfo = {}
 let runType = 'ON_PRICE_CHANGE'
+// This "main" will be replaced by an exchange agg at some point
+let main
 
-const initialize = async () => {
+const start = async (tradeEngineCallback) => {
   getBalances()
   const marketArray = await exchange.fetchMarkets()
   marketInfo = marketArray.reduce((acc, market) => {
     acc[market.id] = market
     return acc
   }, {})
-  const main = new Bittrex()
+  main = new Bittrex()
   // TODO: NEED RETRY AND AWAIT MECHANISM
   main.initOrderDelta()
   setTimeout(() => main.initOrderBook('BTC-ETH'), 3000)
@@ -43,9 +45,17 @@ const initialize = async () => {
   }, 6000)
 
 
-  emitter.on('ORDER_BOOK_INIT', initializeOrderbook)
+  emitter.on('ORDER_BOOK_INIT', initialize)
   emitter.on('MARKET_UPDATE', updatePriceAndRunStrategy)
   emitter.on('ORDER_DELTA', handleOrderDelta)
+
+  emitter.on('ORDER_BOOK_INIT', tradeEngineCallback)
+  emitter.on('MARKET_UPDATE', tradeEngineCallback)
+  emitter.on('ORDER_DELTA', tradeEngineCallback)
+}
+
+const stop = () => {
+  main.stopOrderBook()
 }
 
 const calculateAmount = (base, alt, side, rate) => {
@@ -168,7 +178,7 @@ const handleOrderDelta = (delta) => {
   }
 }
 
-const initializeOrderbook = (event) => {
+const initialize = (event) => {
   masterBook[event.market] = {}
   masterBook[event.market].bids = event.bids
   masterBook[event.market].asks = event.asks
@@ -294,4 +304,4 @@ const onPriceChange = (market, type, newBook, oldBook) => {
   }
 }
 
-module.exports = {initialize}
+module.exports = {start, stop}
