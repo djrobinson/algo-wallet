@@ -23,6 +23,7 @@ let pendingOrder = false
 let openOrders = []
 let iterator = 0
 let marketInfo = {}
+let runType = 'ON_PRICE_CHANGE'
 
 const initialize = async () => {
   getBalances()
@@ -43,7 +44,7 @@ const initialize = async () => {
 
 
   emitter.on('ORDER_BOOK_INIT', initialBook)
-  emitter.on('MARKET_UPDATE', updateOrderBook)
+  emitter.on('MARKET_UPDATE', changePriceAndRunStrategy)
 }
 
 const calculateAmount = (base, alt, side, rate) => {
@@ -97,16 +98,16 @@ const orderWorkflow = async (pair, side, rate) => {
 
 // TODO: REFORM EVENTS TO "INDICATOR_EVENT" INSTEAD OF MARKETBOOK EVENTS
 const runStrategy = async (event) => {
-  if (iterator % 10 === 0 && iterator !== 0) {
-    const askKeys = Object.keys(masterBook[event.market].asks)
-    console.log("Running strategy", event.market, ' ', masterBook[event.market].asks[askKeys[4]].rate )
-    const pair = event.market
-    const side = 'sell'
-    // Choose random bid here
-    const rate = masterBook[pair].asks[askKeys[4]].rate
-    const result = await orderWorkflow(pair, side, rate)
-    log.bright.green( "Order result: ", result )
-  }
+
+  const askKeys = Object.keys(masterBook[event.market].asks)
+  console.log("Running strategy", event.market, ' ', masterBook[event.market].asks[askKeys[4]].rate )
+  const pair = event.market
+  const side = 'sell'
+  // Choose random bid here
+  const rate = masterBook[pair].asks[askKeys[4]].rate
+  const result = await orderWorkflow(pair, side, rate)
+  log.bright.green( "Order result: ", result )
+
   iterator++;
 }
 
@@ -171,7 +172,7 @@ const initialBook = (event) => {
   masterBook[event.market].lowestAsk = event.asks[Object.keys(event.asks)[0]].rate
 }
 
-const updateOrderBook = (event) => {
+const changePriceAndRunStrategy = (event) => {
 
   const market = event.market
   // var orderUpdateInstance = new OrderUpdate(event)
@@ -185,6 +186,11 @@ const updateOrderBook = (event) => {
   let type = ''
   let recalculate = false
   if (masterBook.hasOwnProperty(market)) {
+    const amount = event.amount
+    const rate = event.rate
+    const exchange = event.exchange
+    const market = event.market
+    const identifier = event.rateString
     if (event.type === 'BID_UPDATE') {
       type = 'bids'
       book = masterBook[market].bids
@@ -194,67 +200,97 @@ const updateOrderBook = (event) => {
       book = masterBook[market].asks
     }
     if (book) {
-      if (!event.amount) {
-
-        if (book[event.rateString]) {
-          delete book[event.rateString]
-        }
-        masterBook[market][type] = book
-      } else if (book[event.rateString]) {
-        let order = {
-          exchange: event.exchange,
-          rate: event.rate,
-          amount: event.amount
-        }
-        book[event.rateString] = order
-        masterBook[market][type] = book
-      } else {
-        let order = {
-          exchange: event.exchange,
-          rate: event.rate,
-          amount: event.amount
-        }
-        book[event.rateString] = order
-        const sortedBook = Object.keys(book).sort((a, b) => {
-          if (type === 'bids') {
-            return book[b].rate - book[a].rate
-          }
-          if (type === 'asks') {
-            return book[a].rate - book[b].rate
-          }
-        })
-        // FOR TESTING ONLY
+      let newBook, oldBook
+      [newBook, oldBook] = maintainOrderBook(book, identifier, exchange, type, market, rate, amount)
+      const isPriceChange = onPriceChange(market, type, newBook, oldBook)
+      if (runType === 'ON_PRICE_CHANGE' && isPriceChange) {
+        console.log("PRICE CHANGE")
         recalculate = true
-        // Run strategy if there is a change in bid price
-        if (type === 'bids') {
-          if (book[sortedBook[0]].rate != masterBook[market].highestBid) {
-            // Reset ask
-            if (book[sortedBook[0]].rate > masterBook[market].highestBid) {
-              masterBook[market].highestBid = book[sortedBook[0]].rate
-            }
-            // recalculate = true
-          }
-        }
-        // Run strategy if there is a change in ask price
-        if (type === 'asks') {
-          if (book[sortedBook[0]].rate != masterBook[market].lowestAsk) {
-            // Reset bid
-            if (book[sortedBook[0]].rate < masterBook[market].lowestAsk) {
-              masterBook[market].lowestAsk = book[sortedBook[0]].rate
-            }
-            // recalculate = true
-          }
-        }
-        const newBook = {}
-        sortedBook.forEach(b => {
-          newBook[b] = book[b]
-        })
-        masterBook[market][type] = newBook
-        if (recalculate) {
-          runStrategy(event)
-        }
+      }
+      // if (runType === 'ON_MARKET_CHANGE') {
+      //   recalculate = true
+      // }
+      masterBook[market][type] = newBook
+      if (recalculate) {
+        runStrategy(event)
       }
     }
+
+
+  }
+}
+
+const maintainOrderBook = (book, identifier, exchange, type, market, rate, amount) => {
+
+  // Create copy to mutate
+  let newBook = {}
+  let bookKeys = Object.keys(book)
+  bookKeys.forEach(o => {
+    newBook[o] = book[o]
+  })
+  if (!amount && book[identifier]) {
+    delete newBook[identifier]
+    console.log("Remove price point")
+    return [newBook, book]
+  } else if (book[identifier]) {
+    let order = {
+      exchange: exchange,
+      rate: rate,
+      amount: amount
+    }
+    newBook[identifier] = order
+    console.log("Update to amount")
+    return [newBook, book]
+  } else {
+    let order = {
+      exchange: exchange,
+      rate: rate,
+      amount: amount
+    }
+    newBook[identifier] = order
+    const sortedKeys = Object.keys(newBook).sort((a, b) => {
+      if (type === 'bids') {
+        return newBook[b].rate - newBook[a].rate
+      }
+      if (type === 'asks') {
+        return newBook[a].rate - newBook[b].rate
+      }
+    })
+    let sortedNewBook = {}
+    sortedKeys.forEach(o => {
+      sortedNewBook[o] = newBook[o]
+    })
+    console.log("New price point")
+    return [sortedNewBook, book]
+  }
+  return [newBook, book]
+}
+
+const onPriceChange = (market, type, newBook, oldBook) => {
+  if (type === 'bids') {
+    const newBidString = Object.keys(newBook)[0]
+    const oldBidString = Object.keys(oldBook)[0]
+    const newBid = newBook[newBidString]
+    const oldBid = oldBook[oldBidString]
+
+    if (newBid != oldBid) {
+      masterBook[market].highestBid = newBid
+      return true
+    }
+    return false
+  }
+  if (type === 'asks') {
+    const newAskString = Object.keys(newBook)[0]
+    const oldAskString = Object.keys(oldBook)[0]
+    const newAsk = newBook[newAskString]
+    const oldAsk = oldBook[oldAskString]
+
+    if (newAsk != oldAsk) {
+      masterBook[market].lowestAsk = newAsk
+      return true
+    }
+    return false
+
   }
 }
 

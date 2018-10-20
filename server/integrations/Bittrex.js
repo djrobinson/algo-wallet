@@ -100,7 +100,6 @@ class Bittrex extends Exchange {
         zlib.inflateRaw (raw, function (err, inflated) {
           if (! err) {
             let json = JSON.parse (inflated.toString ('utf8'));
-            console.log("What is json for market: ", json)
             boundParser('ORDER_BOOK_INIT', json, json.M);
             // Start only after order book inits
             boundInitExchangeDelta(json.M);
@@ -108,14 +107,18 @@ class Bittrex extends Exchange {
         });
       }
       if (data.hasOwnProperty('M') && data['M'][0] && data['M'][0].hasOwnProperty('A')) {
-        console.log("Got props")
         let b64 = data.M[0].A[0];
 
         let raw = new Buffer.from(b64, 'base64');
         zlib.inflateRaw (raw, function (err, inflated) {
           if (! err) {
             let json = JSON.parse (inflated.toString ('utf8'));
-            console.log("Order has  arrived: ", json)
+            if (json.hasOwnProperty('M')) {
+              boundParser('MARKET_DELTA', json, json.M)
+            }
+            if (json.hasOwnProperty('o')) {
+              console.log("Order has  arrived: ", json)
+            }
           }
         });
       }
