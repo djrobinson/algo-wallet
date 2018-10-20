@@ -60,6 +60,17 @@ io.on('connection', client => {
 
 app.use('/api', indexRouter);
 
+app.get('/test', (req, res) => {
+  res.json({
+    test: 'test'
+  })
+})
+
+app.get('initialize', (req, res) => {
+  initialize()
+})
+
+
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname+'/client/build/index.html'));
 });
@@ -80,7 +91,7 @@ app.use((err, req, res, next) => {
   res.send({ error: 'error'});
 });
 
-initialize()
+
 
 
 module.exports = {app: app, server: server};

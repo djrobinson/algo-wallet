@@ -11,16 +11,11 @@ class App extends Component {
   }
 
   componentDidMount() {
-    fetch('/api/getMarkets')
+    fetch('/test')
       .then(res => res.json())
       .then(data => {
-        this.setState({ markets: data })
+        this.setState({ test: data.test })
       });
-  }
-
-  selectMarket(mkt) {
-    console.log("Selecting market", mkt);
-    this.setState({ selectedMarket: mkt })
   }
 
   render() {
@@ -28,38 +23,12 @@ class App extends Component {
       <div className="App">
         <Row className="header-row">
           <div className="header">
-            <h1>ARBWATCH</h1>
+            <h1>ALGOWALLET</h1>
           </div>
         </Row>
         <Row>
           <Col md={4} className="coin-tiles">
-            {
-              this.state.markets.map((market, i) => {
-                return (
-                  <Col md={4} className="coin-col" key={i} >
-                    <div className="coin-tile" onClick={() => {this.selectMarket(market.market)}}>
-
-                      <img src={market.logo ? market.logo : ''} alt="" height="75px" width="75px" />
-                      <h4>{market.market}</h4>
-                    </div>
-                  </Col>
-                );
-              })
-            }
-          </Col>
-          <Col md={8} className="main-panel">
-            {
-              (this.state.selectedMarket) && (
-                <OrderBook market={this.state.selectedMarket} />
-              )
-            }
-            {
-              (!this.state.selectedMarket) && (
-                <div className="welcome">
-                  <h1>Select a trading pair to get started!</h1>
-                </div>
-              )
-            }
+            { this.state.test }
           </Col>
         </Row>
       </div>
