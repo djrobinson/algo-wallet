@@ -139,11 +139,11 @@ class OrderBook extends Component {
         </Row>
         <Row>
           <Col md={6}>
-            <h2>Bids</h2>
+            <h5>Bids</h5>
             <Row className="title-row">
-              <Col md={4}><span>Exchange</span></Col>
-              <Col md={4}><span>Order Size</span></Col>
-              <Col md={4}><span>Bid Rate</span></Col>
+
+              <Col md={6}><span>Order Size</span></Col>
+              <Col md={6}><span>Bid Rate</span></Col>
             </Row>
 
             { (this.props.bids && Object.keys(this.props.bids)[0]) &&
@@ -153,9 +153,8 @@ class OrderBook extends Component {
                   isOverlap = overlapClass;
                   return (
                     <Row key={i} className={this.props.bids[bid].exchange + overlapClass + " order-row bid-row"}>
-                      <Col md={4}><span className="exchange-name">{this.props.bids[bid].exchange}</span></Col>
-                      <Col md={4}><span>{numeral(this.props.bids[bid].amount).format('0.00000000')}</span></Col>
-                      <Col md={4}><span>{numeral(this.props.bids[bid].rate).format('0.00000000')}</span></Col>
+                      <Col md={6}><span>{numeral(this.props.bids[bid].amount).format('0.00000000')}</span></Col>
+                      <Col md={6}><span>{numeral(this.props.bids[bid].rate).format('0.00000000')}</span></Col>
                     </Row>
 
                   );
@@ -172,11 +171,10 @@ class OrderBook extends Component {
             }
           </Col>
           <Col md={6}>
-            <h2>Asks</h2>
+            <h5>Asks</h5>
             <Row className="title-row">
-              <Col md={4}><span>Ask Rate</span></Col>
-              <Col md={4}><span>Order Size</span></Col>
-              <Col md={4}><span>Exchange</span></Col>
+              <Col md={6}><span>Rate</span></Col>
+              <Col md={6}><span>Order Size</span></Col>
             </Row>
             {
               (this.props.asks && Object.keys(this.props.asks)[0]) &&
@@ -185,9 +183,8 @@ class OrderBook extends Component {
                 isOverlap = overlapClass;
                 return (
                   <Row key={i} className={this.props.asks[ask].exchange + overlapClass + " order-row ask-row"}>
-                    <Col md={4}><span>{numeral(this.props.asks[ask].rate).format('0.00000000')}</span></Col>
-                    <Col md={4}><span>{numeral(this.props.asks[ask].amount).format('0.00000000')}</span></Col>
-                    <Col md={4}><span className="exchange-name">{this.props.asks[ask].exchange}</span></Col>
+                    <Col md={6}><span>{numeral(this.props.asks[ask].rate).format('0.00000000')}</span></Col>
+                    <Col md={6}><span>{numeral(this.props.asks[ask].amount).format('0.00000000')}</span></Col>
                   </Row>
                 );
               }))

@@ -62,9 +62,6 @@ class TradeEngine extends Component {
     return (
       <div className="order-book">
         <Row>
-          <h1>TradeEngine Here!</h1>
-        </Row>
-        <Row>
           <Button onClick={this.startSocket}>Start The Trades!</Button>
           <Button onClick={this.stopSocket}>Stop The Trades</Button>
         </Row>
@@ -73,7 +70,6 @@ class TradeEngine extends Component {
             this.state.markets.map((market) => {
               return (
                 <Col md={4} key={market}>
-                  <h1>{market}</h1>
                   <OrderBook
                     market={market}
                     bids={this.state[market].bids}

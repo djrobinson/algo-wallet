@@ -8,27 +8,25 @@ const ccxt = require ('ccxt')
 const log = require ('ololog').configure ({ locate: false })
 
 let masterBook = {}
-let exchange = new ccxt.bittrex ({
-    'apiKey': process.env.BITTREX_API_KEY,
-    'secret': process.env.BITTREX_SECRET,
-    'verbose': false, // set to true to see more debugging output
-    'timeout': 60000,
-    'enableRateLimit': true, // add this
-})
-
-const markets = ['ETH-LTC']
-
-
+let exchange
+let runType
 let currentBalances = {}
 let pendingOrder = false
 let openOrders = []
 let iterator = 0
 let marketInfo = {}
-let runType = 'ON_PRICE_CHANGE'
 // This "main" will be replaced by an exchange agg at some point
 let main
 
-const start = async (tradeEngineCallback) => {
+const start = async (tradeEngineCallback, selectedRunType, markets, exchanges) => {
+  runType = selectedRunType
+  exchange = new ccxt.bittrex ({
+    'apiKey': process.env.BITTREX_API_KEY,
+    'secret': process.env.BITTREX_SECRET,
+    'verbose': false, // set to true to see more debugging output
+    'timeout': 60000,
+    'enableRateLimit': true, // add this
+  })
   getBalances()
   const marketArray = await exchange.fetchMarkets()
   marketInfo = marketArray.reduce((acc, market) => {
@@ -50,9 +48,8 @@ const start = async (tradeEngineCallback) => {
   emitter.on('MARKET_UPDATE', updatePriceAndRunStrategy)
   emitter.on('ORDER_DELTA', handleOrderDelta)
 
-  emitter.on('ORDER_BOOK_INIT', boundCb)
-
   const boundCb = tradeEngineCallback.bind(this)
+  emitter.on('ORDER_BOOK_INIT', boundCb)
   setInterval(() => {
     markets.forEach(market => {
       boundCb({
@@ -60,15 +57,23 @@ const start = async (tradeEngineCallback) => {
         ...masterBook[market]
       })
     })
-
-  }, 5000)
-
+  }, 2000)
 }
 
 const stop = () => {
   if (main) {
     main.stopOrderBook()
   }
+}
+
+const registerExchange = (exchange) => {
+  exchange = new ccxt[exchange] ({
+    'apiKey': process.env.BITTREX_API_KEY,
+    'secret': process.env.BITTREX_SECRET,
+    'verbose': false, // set to true to see more debugging output
+    'timeout': 60000,
+    'enableRateLimit': true, // add this
+  })
 }
 
 const calculateAmount = (base, alt, side, rate) => {
@@ -229,7 +234,7 @@ const updatePriceAndRunStrategy = (event) => {
     if (book) {
       let newBook, oldBook
       [newBook, oldBook] = maintainOrderBook(book, identifier, exchange, type, market, rate, amount)
-      const isPriceChange = onPriceChange(market, type, newBook, oldBook)
+      const isPriceChange = checkPriceAndVolume(market, type, newBook, oldBook)
       if (runType === 'ON_PRICE_CHANGE' && isPriceChange) {
         console.log("PRICE CHANGE")
         recalculate = true
@@ -289,7 +294,7 @@ const maintainOrderBook = (book, identifier, exchange, type, market, rate, amoun
   return [newBook, book]
 }
 
-const onPriceChange = (market, type, newBook, oldBook) => {
+const checkPriceAndVolume = (market, type, newBook, oldBook) => {
   if (type === 'bids') {
     const newBidString = Object.keys(newBook)[0]
     const oldBidString = Object.keys(oldBook)[0]

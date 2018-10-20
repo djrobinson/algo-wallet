@@ -39,13 +39,11 @@ io.on('connection', client => {
     client.emit('ENGINE_EVENT', msg)
   }
 
-  // client.on('startMarket', req => {
-  //   exchangeAggregator.removeAllSubscriptions();
-  //   exchangeAggregator.subscribeToOrderBooks(req.market, aggregatorCallback);
-  // });
-
   client.on('startEngine', req => {
-    start(tradeEngineCallback)
+    console.log("What is the req from start engine: ", req)
+    const markets = ['ETH-LTC', 'BTC-ETH']
+    const exchanges = ['bittrex']
+    start(tradeEngineCallback, 'ON_PRICE_CHANGE', markets, exchanges)
   })
 
   client.on('stopEngine', req => {
