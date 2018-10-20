@@ -43,8 +43,9 @@ const initialize = async () => {
   }, 6000)
 
 
-  emitter.on('ORDER_BOOK_INIT', initialBook)
-  emitter.on('MARKET_UPDATE', changePriceAndRunStrategy)
+  emitter.on('ORDER_BOOK_INIT', initializeOrderbook)
+  emitter.on('MARKET_UPDATE', updatePriceAndRunStrategy)
+  emitter.on('ORDER_DELTA', handleOrderDelta)
 }
 
 const calculateAmount = (base, alt, side, rate) => {
@@ -79,9 +80,8 @@ const orderWorkflow = async (pair, side, rate) => {
       console.log("We've got an update!!")
       // Clone and erase openOrders
       const orders = openOrders.slice(0)
-      openOrders = [];
       for (const order of orders) {
-        const cancelResponse = await cancelOrder(order.id)
+        const cancelResponse = await cancelOrder(order.orderUuid)
         log.bright.red( "Cancel results: ", cancelResponse )
       }
 
@@ -140,14 +140,7 @@ const createOrder = async (symbol, orderType, side, amount, price) => {
   try {
     log.bright.yellow("First Order: ", symbol, side, price, amount)
     const response = await exchange.createOrder (symbol, orderType, side, amount, price)
-    log.bright.magenta (response)
-    if (response.side === 'buy') {
-      openOrders.push(response)
-    }
-    if (response.side === 'sell') {
-      openSells.push(response)
-    }
-    log.bright.magenta ('Succeeded')
+    log.bright.magenta ('Succeeded', response)
     return response
   } catch (e) {
     log.bright.magenta (symbol, side, exchange.iso8601 (Date.now ()), e.constructor.name, e.message)
@@ -164,7 +157,18 @@ const cancelOrder = async (id) => {
   }
 }
 
-const initialBook = (event) => {
+const handleOrderDelta = (delta) => {
+  console.log("We got an order delta!!!: ", delta)
+  if (delta.type === 'OPEN') {
+    openOrders.push(delta)
+  }
+  if (delta.type === 'CANCEL') {
+    const asdf = openOrders.filter(o => (o.uuid !== delta.uuid))
+    console.log("Did we filter out that order? ", asdf)
+  }
+}
+
+const initializeOrderbook = (event) => {
   masterBook[event.market] = {}
   masterBook[event.market].bids = event.bids
   masterBook[event.market].asks = event.asks
@@ -172,7 +176,7 @@ const initialBook = (event) => {
   masterBook[event.market].lowestAsk = event.asks[Object.keys(event.asks)[0]].rate
 }
 
-const changePriceAndRunStrategy = (event) => {
+const updatePriceAndRunStrategy = (event) => {
 
   const market = event.market
   // var orderUpdateInstance = new OrderUpdate(event)
@@ -215,14 +219,10 @@ const changePriceAndRunStrategy = (event) => {
         runStrategy(event)
       }
     }
-
-
   }
 }
 
 const maintainOrderBook = (book, identifier, exchange, type, market, rate, amount) => {
-
-  // Create copy to mutate
   let newBook = {}
   let bookKeys = Object.keys(book)
   bookKeys.forEach(o => {

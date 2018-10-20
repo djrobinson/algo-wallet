@@ -16,14 +16,18 @@ class Exchange {
   }
 
   emitOrderBook(order) {
-      order['exchange'] = this.exchangeName;
+      order['exchange'] = this.exchangeName
       if (order.type === 'ORDER_BOOK_INIT') {
-        emitter.emit(order.type, order);
+        emitter.emit(order.type, order)
       } else if (order.type === 'WS_ERROR') {
-        emitter.emit(order.type, order);
+        emitter.emit(order.type, order)
       } else {
-        emitter.emit('MARKET_UPDATE', order);
+        emitter.emit('MARKET_UPDATE', order)
       }
+  }
+
+  emitOrderDelta(orderDelta) {
+    emitter.emit('ORDER_DELTA', orderDelta)
   }
 
   get(url){

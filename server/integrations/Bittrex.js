@@ -88,6 +88,7 @@ class Bittrex extends Exchange {
     }
     const boundParser = this.parseMarketDelta.bind(this);
     const boundInitExchangeDelta = this.initExchangeDelta.bind(this);
+    const boundParseOrderDelta = this.parseOrderDelta.bind(this);
 
     orderClient.serviceHandlers.messageReceived = function (message) {
       let data = jsonic (message.utf8Data);
@@ -117,7 +118,7 @@ class Bittrex extends Exchange {
               boundParser('MARKET_DELTA', json, json.M)
             }
             if (json.hasOwnProperty('o')) {
-              console.log("Order has  arrived: ", json)
+              boundParseOrderDelta(json, json.M)
             }
           }
         });
@@ -154,7 +155,6 @@ class Bittrex extends Exchange {
   }
 
   initExchangeDelta(market) {
-
     this.client.call ('c2', 'SubscribeToExchangeDeltas', market).done (function (err, result) {
       if (err) { return console.log (err); }
       if (result === true) {
@@ -163,8 +163,28 @@ class Bittrex extends Exchange {
     });
   }
 
-  parseOrderDelta(type, orderDelta, market) {
-
+  parseOrderDelta(orderDelta, market) {
+    console.log("Parsing order delta!!!")
+    if (orderDelta.hasOwnProperty('o')) {
+      const typeMap = [
+        'OPEN',
+        'PARTIAL',
+        'FILL',
+        'CANCEL'
+      ]
+      const delta = {
+        uuid: orderDelta.w,
+        type: typeMap[parseInt(orderDelta.TY)],
+        orderUuid: orderDelta.o.OU,
+        exchange: this.exchangeName,
+        market: orderDelta.o.E,
+        uuid: orderDelta.o.U,
+        orderType: orderDelta.o.OT,
+        amount: orderDelta.o.Q,
+        rate: orderDelta.o.X
+      }
+      this.emitOrderDelta(delta)
+    }
   }
 
   parseMarketDelta(type, marketDelta, market) {
