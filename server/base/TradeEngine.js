@@ -16,11 +16,16 @@ let exchange = new ccxt.bittrex ({
     'timeout': 60000,
     'enableRateLimit': true, // add this
   })
-let runType = 'ON_PRICE_CHANGE'
+
+// TODO: WILL EVENTUALLY BE INPUTS
+let runType = 'ON_INTERVAL'
+let intervalSize = 10000
+let newIntervalFlag = false
 let desiredDepth = {
-  ETH: 20,
+  ETH: 30,
   BTC: 5
 }
+
 let currentBalances = {}
 let pendingOrder = false
 let openOrders = []
@@ -47,6 +52,12 @@ const start = async (tradeEngineCallback, markets, exchanges) => {
       main.initOrderBook(market)
     })
   }, 6000)
+
+  if (runType === 'ON_INTERVAL') {
+    setTimeout(() => {
+      newIntervalFlag = true
+    }, intervalSize)
+  }
 
 
   emitter.on('ORDER_BOOK_INIT', initialize)
@@ -194,7 +205,7 @@ const handleOrderDelta = (delta) => {
     openOrders.push(delta)
   }
   if (delta.type === 'CANCEL') {
-    const asdf = openOrders.filter(o => (o.uuid !== delta.uuid))
+    const openOrders = openOrders.filter(o => (o.uuid !== delta.uuid))
   }
 }
 
@@ -247,6 +258,11 @@ const updatePriceAndRunStrategy = (event) => {
       }
       if (runType === 'ON_MARKET_CHANGE') {
         recalculate = true
+      }
+      if (runType === 'ON_INTERVAL' && newIntervalFlag) {
+        console.log("New interval!!")
+        recalculate = true
+        newIntervalFlag = false
       }
       masterBook[market].summary = newSummary
       masterBook[market][type] = newBook
@@ -327,8 +343,6 @@ const checkPriceAndVolume = (type, market, newBook, oldBook) => {
     const { volumeAt50Orders, desiredDepthRate } = tallyVolumeStats(newBook, newKeys, desiredDepth[base])
     summary.bidVolumeAt50Orders = volumeAt50Orders
     summary.bidDesiredDepth = desiredDepthRate
-    // Check volume details
-    // Determine total offer sizes at each pricepoint, cut down to maxOrderDepth if needed
     // Determine time (use Date.now() to group into minute categories)
     // Check against last summary to determine how much it has changed
     // If it is past a certain interval
@@ -364,9 +378,9 @@ const tallyVolumeStats = (book, newKeys, desiredDepth) => {
     if (volumeCounter > desiredDepth && !foundOrder) {
       desiredDepthRate = book[order].rate
       foundOrder = true
-      volumeCounter += (book[order].amount / book[order].rate)
+      volumeCounter += (book[order].amount * book[order].rate)
     } else if (i < 50) {
-      volumeCounter += (book[order].amount / book[order].rate)
+      volumeCounter += (book[order].amount * book[order].rate)
     }
   })
   console.log("Total volume counter: ", volumeCounter, desiredDepthRate)
