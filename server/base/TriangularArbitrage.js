@@ -1,4 +1,11 @@
-// TODO: LET THIS RUN ON ITS OWN
+// TODO: Will end up using some lessons from this strategy to break it up &
+// make  more generic, something like "MultiPhaseTrade"
+// and "MarketOrderExecution". This will differ from what's in trade engine
+// since it will be more focused on precise execution against open orders
+// as opposed to setting fixed single limit orders. Will investigate to see if
+// exchange apis allow for precise market orders, but I don't want to
+// count on it since tri arb will require very specific rates and amts to be
+// profitable and we can't count on them being there after a few milliseconds
 
 const triangularArbitrage = (market) => {
   let ALT

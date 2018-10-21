@@ -370,8 +370,6 @@ const checkPriceAndVolume = (type, market, newBook, oldBook) => {
     // Determine time (use Date.now() to group into minute categories)
     // Check against last summary to determine how much it has changed
     // If it is past a certain interval
-
-
   }
   if (type === 'asks') {
     const newAskString = newKeys[0]
