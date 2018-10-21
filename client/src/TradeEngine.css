@@ -1,0 +1,13 @@
+.order-action-row {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+.order-action-tile {
+  display: inline-flex;
+  height: 100px;
+  width: 150px;
+  border: solid 3px gray;
+  margin: 5px;
+}
