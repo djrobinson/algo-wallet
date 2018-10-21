@@ -20,14 +20,14 @@ let exchange = new ccxt.bittrex ({
 // TODO: WILL EVENTUALLY BE INPUTS
 let runType = 'ON_INTERVAL'
 let intervalSize = 10000
-let newIntervalFlag = false
+let newIntervalFlags = {}
 let desiredDepth = {
   ETH: 30,
   BTC: 5
 }
 
 let currentBalances = {}
-let pendingOrder = false
+let pendingOrders = {}
 let openOrders = []
 let iterator = 0
 let marketInfo = {}
@@ -36,26 +36,30 @@ const maxOrderDepth = 50
 // This "main" will be replaced by an exchange agg at some point
 let main
 
-const start = async (tradeEngineCallback, markets, exchanges) => {
+const start = async (markets, exchanges, tradeEngineCallback, orderActionCallback) => {
   getBalances()
   const marketArray = await exchange.fetchMarkets()
   marketInfo = marketArray.reduce((acc, market) => {
     acc[market.id] = market
     return acc
   }, {})
+  log.bright.blue(marketInfo)
   main = new Bittrex()
   // TODO: NEED RETRY AND AWAIT MECHANISM
   main.initOrderDelta()
   setTimeout(() => main.initOrderBook('BTC-ETH'), 3000)
   setTimeout(() => {
     markets.forEach(market => {
+      newIntervalFlags[market] = false
       main.initOrderBook(market)
     })
   }, 6000)
 
   if (runType === 'ON_INTERVAL') {
-    setTimeout(() => {
-      newIntervalFlag = true
+    setInterval(() => {
+      markets.forEach(market => {
+        newIntervalFlags[market] = true
+      })
     }, intervalSize)
   }
 
@@ -65,6 +69,7 @@ const start = async (tradeEngineCallback, markets, exchanges) => {
   emitter.on('ORDER_DELTA', handleOrderDelta)
 
   const boundCb = tradeEngineCallback.bind(this)
+  const boundOrderCb =
   setInterval(() => {
     markets.forEach(market => {
       boundCb({
@@ -104,8 +109,9 @@ const calculateAmount = (base, alt, side, rate) => {
   if (side === 'sell') {
     const fee = currentBalances[alt].free * .0025
     const baseAmount = (currentBalances[alt].free - fee)
-    console.log("What is baseAmount: ", baseAmount)
-    const minimum = marketInfo[base + '-' + alt].limits.amount.min * rate
+
+    const minimum = marketInfo[base + '-' + alt].limits.amount.min
+    console.log("What is baseAmount: ", baseAmount, minimum)
     if (minimum < baseAmount) {
       return baseAmount
     }
@@ -117,40 +123,58 @@ const orderWorkflow = async (pair, side, rate) => {
   const base = pair.slice(0, pair.indexOf('-'))
   const alt = pair.slice(pair.length - pair.indexOf('-'), pair.length)
   const amount = calculateAmount(base, alt, side, rate)
-  console.log("What is amount: ", amount)
   if (amount) {
     if (openOrders.length) {
       console.log("We've got an update!!")
       // Clone and erase openOrders
+      // THIS SHOULDN'T BE ALL ORDERS
       const orders = openOrders.slice(0)
       for (const order of orders) {
         const cancelResponse = await cancelOrder(order.orderUuid)
         log.bright.red( "Cancel results: ", cancelResponse )
       }
+    }
+    const asset = side === 'buy' ? base : alt
+    if (!pendingOrders[asset]) {
+      pendingOrders[asset] = true
+      let orderResults
+      try {
+        orderResults = await createOrder(alt + '/' + base, 'limit', side, amount, rate)
+      } catch (e) {
+        log.bright.red("Error while creating order ", e)
+        orderResults = e
+      } finally {
+        pendingOrders[asset] = false
+        return orderResults
+      }
 
+    } else {
+      return 'Order pending'
     }
-    if (!pendingOrder) {
-      pendingOrder = true
-      const orderResults = await createOrder(alt + '/' + base, 'limit', side, amount, rate)
-      pendingOrder = false
-      return orderResults
-    }
+  } else {
+    return 'Insufficient funds'
   }
 }
 
 
 // TODO: REFORM EVENTS TO "INDICATOR_EVENT" INSTEAD OF MARKETBOOK EVENTS
 const runStrategy = async (event) => {
-
-  const askKeys = Object.keys(masterBook[event.market].asks)
-  console.log("Running strategy", event.market, ' ', masterBook[event.market].asks[askKeys[4]].rate )
+  console.log("Running strategy", event.market)
   const pair = event.market
   const side = 'sell'
-  // Choose random bid here
-  const rate = masterBook[pair].asks[askKeys[4]].rate
-  const result = await orderWorkflow(pair, side, rate)
-  log.bright.green( "Order result: ", result )
+  if (masterBook[pair].summary.bidDesiredDepth) {
+    console.log("Executing buy")
+    const buyRate = masterBook[pair].summary.bidDesiredDepth
+    const buyResult = await orderWorkflow(pair, 'buy', buyRate)
+    log.bright.green( "Buy order result: ", buyResult )
+  }
 
+  if (masterBook[pair].summary.askDesiredDepth) {
+    console.log("Executing sell")
+    const sellRate = masterBook[pair].summary.askDesiredDepth
+    const sellResult = await orderWorkflow(pair, 'sell', sellRate)
+    log.bright.red( "Sell order result: ", sellResult )
+  }
   iterator++
 }
 
@@ -159,7 +183,7 @@ const getBalances = async () => {
   try {
       // fetch account balance from the exchange, save to global variable
       currentBalances = await exchange.fetchBalance()
-      log.bright.lightGreen ( "Initial Balances: ", currentBalances )
+      log.bright.yellow(currentBalances)
   } catch (e) {
       if (e instanceof ccxt.DDoSProtection || e.message.includes ('ECONNRESET')) {
           log.bright.yellow ('[DDoS Protection] ' + e.message)
@@ -205,7 +229,7 @@ const handleOrderDelta = (delta) => {
     openOrders.push(delta)
   }
   if (delta.type === 'CANCEL') {
-    const openOrders = openOrders.filter(o => (o.uuid !== delta.uuid))
+    openOrders = openOrders.filter(o => (o.uuid !== delta.uuid))
   }
 }
 
@@ -259,10 +283,10 @@ const updatePriceAndRunStrategy = (event) => {
       if (runType === 'ON_MARKET_CHANGE') {
         recalculate = true
       }
-      if (runType === 'ON_INTERVAL' && newIntervalFlag) {
+      if (runType === 'ON_INTERVAL' && newIntervalFlags[market]) {
         console.log("New interval!!")
         recalculate = true
-        newIntervalFlag = false
+        newIntervalFlags[market] = false
       }
       masterBook[market].summary = newSummary
       masterBook[market][type] = newBook
@@ -282,7 +306,6 @@ const maintainOrderBook = (book, identifier, exchange, type, market, rate, amoun
   })
   if (!amount && book[identifier]) {
     delete newBook[identifier]
-    console.log("Remove price point")
     return [newBook, book]
   } else if (book[identifier]) {
     let order = {
@@ -291,7 +314,6 @@ const maintainOrderBook = (book, identifier, exchange, type, market, rate, amoun
       amount: amount
     }
     newBook[identifier] = order
-    console.log("Update to amount")
     return [newBook, book]
   } else {
     let order = {
@@ -312,7 +334,6 @@ const maintainOrderBook = (book, identifier, exchange, type, market, rate, amoun
     sortedKeys.forEach(o => {
       sortedNewBook[o] = newBook[o]
     })
-    console.log("New price point")
     return [sortedNewBook, book]
   }
   return [newBook, book]
@@ -324,7 +345,6 @@ const checkPriceAndVolume = (type, market, newBook, oldBook) => {
   const newKeys = Object.keys(newBook)
   const oldKeys = Object.keys(oldBook)
   const base = market.slice(0,3)
-  console.log("What is base: ", base)
 
   const oldSummary = masterBook[market].summary
   let summary = {}
@@ -383,7 +403,6 @@ const tallyVolumeStats = (book, newKeys, desiredDepth) => {
       volumeCounter += (book[order].amount * book[order].rate)
     }
   })
-  console.log("Total volume counter: ", volumeCounter, desiredDepthRate)
   return {
     volumeAt50Orders: volumeCounter,
     desiredDepthRate
