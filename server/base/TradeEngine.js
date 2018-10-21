@@ -17,6 +17,10 @@ let exchange = new ccxt.bittrex ({
     'enableRateLimit': true, // add this
   })
 let runType = 'ON_PRICE_CHANGE'
+let desiredDepth = {
+  ETH: 20,
+  BTC: 5
+}
 let currentBalances = {}
 let pendingOrder = false
 let openOrders = []
@@ -234,7 +238,7 @@ const updatePriceAndRunStrategy = (event) => {
     if (book) {
       let newBook, oldBook
       [newBook, oldBook] = maintainOrderBook(book, identifier, exchange, type, market, rate, amount)
-      const newSummary = checkPriceAndVolume(type, newBook, oldBook)
+      const newSummary = checkPriceAndVolume(type, market, newBook, oldBook)
       const isPriceChange = newSummary.isPriceChange
 
       if (runType === 'ON_PRICE_CHANGE' && isPriceChange) {
@@ -298,12 +302,15 @@ const maintainOrderBook = (book, identifier, exchange, type, market, rate, amoun
   return [newBook, book]
 }
 
-const checkPriceAndVolume = (type, newBook, oldBook) => {
+const checkPriceAndVolume = (type, market, newBook, oldBook) => {
   // Return orderBook summary here. Will be saved periodically
   // Will also be analyzed based on run strategy settings (potentially everyupdate)
   const newKeys = Object.keys(newBook)
   const oldKeys = Object.keys(oldBook)
+  const base = market.slice(0,3)
+  console.log("What is base: ", base)
 
+  const oldSummary = masterBook[market].summary
   let summary = {}
   summary.isPriceChange = false
 
@@ -314,11 +321,12 @@ const checkPriceAndVolume = (type, newBook, oldBook) => {
     const oldBid = oldBook[oldBidString]
 
     if (newBid != oldBid) {
-
       summary.isPriceChange = true
     }
     summary.highestBid = newBid
-    summary.bidVolumeAt50Orders = tallyVolumeStats(newBook, newKeys)
+    const { volumeAt50Orders, desiredDepthRate } = tallyVolumeStats(newBook, newKeys, desiredDepth[base])
+    summary.bidVolumeAt50Orders = volumeAt50Orders
+    summary.bidDesiredDepth = desiredDepthRate
     // Check volume details
     // Determine total offer sizes at each pricepoint, cut down to maxOrderDepth if needed
     // Determine time (use Date.now() to group into minute categories)
@@ -336,18 +344,36 @@ const checkPriceAndVolume = (type, newBook, oldBook) => {
     if (newAsk != oldAsk) {
       summary.isPriceChange = true
     }
+    const { volumeAt50Orders, desiredDepthRate } = tallyVolumeStats(newBook, newKeys, desiredDepth[base])
     summary.lowestAsk = newAsk
-    summary.askVolumeAt50Orders = tallyVolumeStats(newBook, newKeys)
+    summary.askVolumeAt50Orders = volumeAt50Orders
+    summary.askDesiredDepth = desiredDepthRate
   }
-  return summary
+  const newSummary = {
+    ...oldSummary,
+    ...summary
+  }
+  return newSummary
 }
 
-const tallyVolumeStats = (book, newKeys) => {
-  const volumeAt50Orders = newKeys.reduce((acc, curr) => {
-
-    return book[curr].amount + acc
-  }, 0)
-  return volumeAt50Orders
+const tallyVolumeStats = (book, newKeys, desiredDepth) => {
+  let volumeCounter = 0
+  let foundOrder = false
+  let desiredDepthRate
+  newKeys.forEach((order, i) => {
+    if (volumeCounter > desiredDepth && !foundOrder) {
+      desiredDepthRate = book[order].rate
+      foundOrder = true
+      volumeCounter += (book[order].amount / book[order].rate)
+    } else if (i < 50) {
+      volumeCounter += (book[order].amount / book[order].rate)
+    }
+  })
+  console.log("Total volume counter: ", volumeCounter, desiredDepthRate)
+  return {
+    volumeAt50Orders: volumeCounter,
+    desiredDepthRate
+  }
 }
 
 module.exports = {start, stop}
