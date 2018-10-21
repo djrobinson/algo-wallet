@@ -66,10 +66,14 @@ const start = async (markets, exchanges, tradeEngineCallback, orderActionCallbac
 
   emitter.on('ORDER_BOOK_INIT', initialize)
   emitter.on('MARKET_UPDATE', updatePriceAndRunStrategy)
-  emitter.on('ORDER_DELTA', handleOrderDelta)
+
+  const onOrderDelta = event => {
+    handleOrderDelta(event)
+    orderActionCallback(event)
+  }
+  emitter.on('ORDER_DELTA', onOrderDelta)
 
   const boundCb = tradeEngineCallback.bind(this)
-  const boundOrderCb =
   setInterval(() => {
     markets.forEach(market => {
       boundCb({

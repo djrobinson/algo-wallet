@@ -51,6 +51,9 @@ class TradeEngine extends Component {
         this.setState({markets: [...this.state.markets, message.market]})
       }
     });
+    this.socket.on('ORDER_ACTION', message => {
+      console.log("Order actions", message)
+    })
   }
 
   stopSocket() {

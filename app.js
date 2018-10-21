@@ -39,7 +39,8 @@ io.on('connection', client => {
   }
 
   const orderActionCallback = msg => {
-    client.emit('ORDER_ACTION'), msg
+
+    client.emit('ORDER_ACTION', msg)
   }
 
   client.on('startEngine', req => {
