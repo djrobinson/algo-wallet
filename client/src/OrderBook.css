@@ -30,6 +30,12 @@
   background-color: rgba(0, 255, 0, 0.3);
 }
 
+.active-order {
+
+  border-right: solid 5px aqua;
+  border-left: solid 5px aqua;
+}
+
 .poloniex .exchange-name {
   color: turquoise;
   font-weight: 700;

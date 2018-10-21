@@ -19,7 +19,7 @@ let exchange = new ccxt.bittrex ({
 
 // TODO: WILL EVENTUALLY BE INPUTS
 let runType = 'ON_INTERVAL'
-let intervalSize = 10000
+let intervalSize = 20000
 let newIntervalFlags = {}
 let desiredDepth = {
   ETH: 30,
@@ -233,7 +233,7 @@ const handleOrderDelta = (delta) => {
     openOrders.push(delta)
   }
   if (delta.type === 'CANCEL') {
-    openOrders = openOrders.filter(o => (o.uuid !== delta.uuid))
+    openOrders = openOrders.filter(o => (o.orderUuid !== delta.orderUuid))
   }
 }
 

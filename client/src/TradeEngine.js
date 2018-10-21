@@ -55,19 +55,25 @@ class TradeEngine extends Component {
       console.log("Order actions", message)
       if (this.state[message.market]) {
         let openOrders = {...this.state.openOrders}
-        console.log("What is orders: ",this.state.openOrders[message.market] )
         if (openOrders[message.market] && openOrders[message.market].length) {
-          console.log("if")
-          openOrders[message.market] = [...this.state.openOrders[message.market], message]
+          if (message.type === 'CANCEL') {
+            openOrders[message.market] = this.state.openOrders[message.market].filter(o => (o.orderUuid !== message.orderUuid))
+          }
+          if (message.type === 'OPEN') {
+            openOrders[message.market] = [...this.state.openOrders[message.market], message]
+          }
         } else {
-          console.log("else")
-          openOrders[message.market] = [message]
+          if (message.type === 'OPEN') {
+            openOrders[message.market] = [message]
+          }
         }
         this.setState({ openOrders })
       } else {
-        let openOrders = {...this.state.openOrders}
-        openOrders[message.market] = [message]
-        this.setState({ openOrders })
+        if (message.type === 'OPEN') {
+          let openOrders = {...this.state.openOrders}
+          openOrders[message.market] = [message]
+          this.setState({ openOrders })
+        }
       }
       console.log("Handling order actions: ", this.state.openOrders)
       this.setState({orders: [...this.state.orders, message]})
@@ -111,6 +117,7 @@ class TradeEngine extends Component {
                     market={market}
                     bids={this.state[market].bids}
                     asks={this.state[market].asks}
+                    openOrders={this.state.openOrders[market]}
                   />
                 </Col>
               )
