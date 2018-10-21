@@ -13,7 +13,8 @@ class Poloniex extends Exchange {
     this.exchangeName = 'poloniex';
     this.marketsUrl = 'https://poloniex.com/public?command=return24hVolume';
     this.wsuri = 'wss://api2.poloniex.com:443';
-    this.socket;
+    this.socket
+    console.log("Starting polo")
   }
 
   async getMarket() {
@@ -42,14 +43,16 @@ class Poloniex extends Exchange {
   }
 
   initOrderBook(market) {
-    const poloMarket = market.replace('-', '_');
-    const wsuri = this.wsuri;
-    const socket = new WebSocket(wsuri);
-    this.socket = socket;
+    const socket = new WebSocket(this.wsuri);
+
     socket.onopen = session => {
+      console.log("Polo socket opened")
       let params = {command: 'subscribe', channel: poloMarket};
       socket.send(JSON.stringify(params));
-    };
+      console.log("Init polo")
+    }
+
+    const poloMarket = market.replace('-', '_');
 
     socket.onerror = error => {
       console.log("Poloniex WS Error!", error);

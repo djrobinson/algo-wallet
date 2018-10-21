@@ -1,7 +1,7 @@
 "use strict"
 
 const Bittrex = require('../integrations/Bittrex')
-const ExchangeAggregator = require('./ExchangeAggregator');
+const Poloniex = require('../integrations/Poloniex')
 const { emitter } = require('./Exchange')
 const OrderUpdate = require('../db/models/orderUpdate.model');
 const ccxt = require ('ccxt')
@@ -33,8 +33,12 @@ let iterator = 0
 let marketInfo = {}
 
 const maxOrderDepth = 50
-// This "main" will be replaced by an exchange agg at some point
-let main
+
+
+
+let bittrex
+
+
 
 const start = async (markets, exchanges, tradeEngineCallback, orderActionCallback) => {
   getBalances()
@@ -44,16 +48,30 @@ const start = async (markets, exchanges, tradeEngineCallback, orderActionCallbac
     return acc
   }, {})
   log.bright.blue(marketInfo)
-  main = new Bittrex()
-  // TODO: NEED RETRY AND AWAIT MECHANISM
-  main.initOrderDelta()
-  setTimeout(() => main.initOrderBook('BTC-ETH'), 3000)
+
+  bittrex = new Bittrex()
+  bittrex.initOrderDelta()
+  setTimeout(() => { bittrex.initOrderBook(markets[0]) }, 3000)
+
+  const poloniex = new Poloniex()
+
+  markets.forEach((market, i) => {
+    setTimeout(() => {
+      poloniex.initOrderBook(market)
+    },3000 * (i + 1))
+  })
+
   setTimeout(() => {
-    markets.forEach(market => {
-      newIntervalFlags[market] = false
-      main.initOrderBook(market)
+    markets.forEach((market, i) => {
+      if (i) {
+        newIntervalFlags[market] = false
+        bittrex.initOrderBook(market)
+      }
+
     })
   }, 6000)
+
+
 
   if (runType === 'ON_INTERVAL') {
     setInterval(() => {
@@ -63,8 +81,7 @@ const start = async (markets, exchanges, tradeEngineCallback, orderActionCallbac
     }, intervalSize)
   }
 
-
-  emitter.on('ORDER_BOOK_INIT', initialize)
+  emitter.on('ORDER_BOOK_INIT', initializeOrderBooks)
   emitter.on('MARKET_UPDATE', updatePriceAndRunStrategy)
 
   const onOrderDelta = event => {
@@ -85,8 +102,8 @@ const start = async (markets, exchanges, tradeEngineCallback, orderActionCallbac
 }
 
 const stop = () => {
-  if (main) {
-    main.stopOrderBook()
+  if (bittrex) {
+    bittrex.stopOrderBook()
   }
 }
 
@@ -166,20 +183,24 @@ const runStrategy = async (event) => {
   console.log("Running strategy", event.market)
   const pair = event.market
   const side = 'sell'
-  if (masterBook[pair].summary.bidDesiredDepth) {
-    console.log("Executing buy")
-    const buyRate = masterBook[pair].summary.bidDesiredDepth
-    const buyResult = await orderWorkflow(pair, 'buy', buyRate)
-    log.bright.green( "Buy order result: ", buyResult )
+  if (event.exchange === 'bittrex') {
+    if (masterBook[pair].summary.bidDesiredDepth) {
+      console.log("Executing buy")
+      const buyRate = masterBook[pair].summary.bidDesiredDepth
+      const buyResult = await orderWorkflow(pair, 'buy', buyRate)
+      log.bright.green( "Buy order result: ", buyResult )
+    }
+
+    if (masterBook[pair].summary.askDesiredDepth) {
+      console.log("Executing sell")
+      const sellRate = masterBook[pair].summary.askDesiredDepth
+      const sellResult = await orderWorkflow(pair, 'sell', sellRate)
+      log.bright.red( "Sell order result: ", sellResult )
+    }
+    iterator++
   }
 
-  if (masterBook[pair].summary.askDesiredDepth) {
-    console.log("Executing sell")
-    const sellRate = masterBook[pair].summary.askDesiredDepth
-    const sellResult = await orderWorkflow(pair, 'sell', sellRate)
-    log.bright.red( "Sell order result: ", sellResult )
-  }
-  iterator++
+
 }
 
 const getBalances = async () => {
@@ -237,14 +258,57 @@ const handleOrderDelta = (delta) => {
   }
 }
 
-const initialize = (event) => {
-  console.log("Initializing: ", event.market)
-  masterBook[event.market] = {}
-  masterBook[event.market].bids = event.bids
-  masterBook[event.market].asks = event.asks
-  masterBook[event.market].summary = {}
-  masterBook[event.market].summary.highestBid = event.bids[Object.keys(event.bids)[0]]
-  masterBook[event.market].summary.lowestAsk = event.asks[Object.keys(event.asks)[0]]
+// Stealing from exchang agg
+const initializeOrderBooks = (event) => {
+  console.log("Initting order books: ", event.exchange, event.market)
+  const market = event.market
+  let newBook = {}
+  if (masterBook[market] && masterBook[market].bids) {
+    const allBids = {...event.bids, ...masterBook[market].bids};
+    const allBidRates = Object.keys(allBids);
+    const sortedBids = allBidRates.sort((a, b) => {
+      return allBids[b].rate - allBids[a].rate;
+    });
+    if (!masterBook[market].summary) {
+      newBook.summary = {}
+    } else {
+      newBook.summary = masterBook[market].summary
+    }
+    newBook.summary.highestBid = allBids[sortedBids[0]].rate;
+    const bidBook = {};
+    sortedBids.forEach(bid => {
+      bidBook[bid] = allBids[bid];
+    })
+    newBook.bids = bidBook;
+  } else {
+    newBook.summary = {}
+    newBook.summary.highestBid = event.bids[Object.keys(event.bids)[0]].rate;
+    newBook.bids = event.bids;
+  };
+
+  if (masterBook[market] && masterBook[market].asks) {
+    const allAsks = {...event.asks, ...masterBook[market].asks};
+    const allAskRates = Object.keys(allAsks);
+    const sortedAsks = allAskRates.sort((a, b) => {
+      return allAsks[a].rate - allAsks[b].rate;
+    });
+    if (!masterBook[market].summary) {
+      newBook.summary = {}
+    } else {
+      newBook.summary = masterBook[market].summary
+    }
+    newBook.summary.lowestAsk = allAsks[sortedAsks[0]].rate;
+    const askBook = {};
+    sortedAsks.forEach(ask => {
+      askBook[ask] = allAsks[ask];
+    })
+    newBook.asks = askBook;
+  } else {
+    newBook.summary = {}
+    newBook.summary.lowestAsk = event.asks[Object.keys(event.asks)[0]].rate
+    newBook.asks = event.asks;
+  };
+  masterBook[market] = newBook
 }
 
 const updatePriceAndRunStrategy = (event) => {
