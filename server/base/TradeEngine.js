@@ -9,14 +9,6 @@ const log = require ('ololog').configure ({ locate: false })
 
 let masterBook = {}
 
-let exchange = new ccxt.bittrex ({
-    'apiKey': process.env.BITTREX_API_KEY,
-    'secret': process.env.BITTREX_SECRET,
-    'verbose': false, // set to true to see more debugging output
-    'timeout': 60000,
-    'enableRateLimit': true, // add this
-  })
-
 const x = {
   bittrex: new ccxt.bittrex ({
     'apiKey': process.env.BITTREX_API_KEY,
@@ -33,7 +25,6 @@ const x = {
     'enableRateLimit': true, // add this
   })
 }
-
 
 // TODO: WILL EVENTUALLY BE INPUTS
 let runType = 'ON_INTERVAL'
@@ -54,14 +45,9 @@ let pairCount = {
   BTC: 0
 }
 
-
 const maxOrderDepth = 50
 
-
-
 let bittrex
-
-
 
 const start = async (markets, exchanges, tradeEngineCallback, orderActionCallback) => {
   exchanges.forEach(exch => {
@@ -195,34 +181,28 @@ const orderWorkflow = async (exchange, pair, side, rate) => {
   }
 }
 
-
-// TODO: REFORM EVENTS TO "INDICATOR_EVENT" INSTEAD OF MARKETBOOK EVENTS
 const runStrategy = async (event) => {
-  console.log("Running strategy", event.market)
+  console.log("Running strategy", event)
   const pair = event.market
   const side = 'sell'
   const exchange = event.exchange
-  if (exchange === 'bittrex') {
-    if (masterBook[pair].summary.bidDesiredDepth) {
-      console.log("Executing buy")
-      const buyRate = masterBook[pair].summary.bidDesiredDepth
-      const buyResult = await orderWorkflow(exchange, pair, 'buy', buyRate)
-      log.bright.green( "Buy order result: ", buyResult )
-    }
-
-    if (masterBook[pair].summary.askDesiredDepth) {
-      console.log("Executing sell")
-      const sellRate = masterBook[pair].summary.askDesiredDepth
-      const sellResult = await orderWorkflow(exchange, pair, 'sell', sellRate)
-      log.bright.red( "Sell order result: ", sellResult )
-    }
-    iterator++
+  if (masterBook[pair].summary.bidDesiredDepth) {
+    console.log("Executing buy")
+    const buyRate = masterBook[pair].summary.bidDesiredDepth
+    const buyResult = await orderWorkflow(exchange, pair, 'buy', buyRate)
+    log.bright.green( "Buy order result: ", buyResult, event.exchange )
   }
+  if (masterBook[pair].summary.askDesiredDepth) {
+    console.log("Executing sell")
+    const sellRate = masterBook[pair].summary.askDesiredDepth
+    const sellResult = await orderWorkflow(exchange, pair, 'sell', sellRate)
+    log.bright.red( "Sell order result: ", sellResult, event.exchange )
+  }
+  iterator++
 }
 
 const getBalances = async (exchange) => {
   try {
-
       // fetch account balance from the exchange, save to global variable
       currentBalances[exchange] = await x[exchange].fetchBalance()
       log.bright.yellow(currentBalances[exchange].free)

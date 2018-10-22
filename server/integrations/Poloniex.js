@@ -94,8 +94,7 @@ class Poloniex extends Exchange {
   }
 
   parseMarketDelta(marketDelta, market) {
-    const data = JSON.parse(marketDelta);
-    console.log("What is parse data: ", data)
+    const data = JSON.parse(marketDelta)
     if (data && data[0] == 1000) {
       console.log("POLONIEX EXCHANGE UPDATE: ", data[2])
     } else if (data && data[2] && data[2][0] && data[2][0][1] && data[2][0][1].hasOwnProperty('orderBook')) {
