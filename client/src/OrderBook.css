@@ -32,8 +32,16 @@
 
 .active-order {
 
-  border-right: solid 5px aqua;
-  border-left: solid 5px aqua;
+  border-right: solid 5px gold;
+  border-left: solid 5px gold;
+}
+
+.new-order {
+  background-color: orange;
+}
+
+.amount-change {
+  background-color: pink;
 }
 
 .poloniex .exchange-name {

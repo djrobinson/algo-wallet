@@ -19,7 +19,7 @@ let exchange = new ccxt.bittrex ({
 
 // TODO: WILL EVENTUALLY BE INPUTS
 let runType = 'ON_INTERVAL'
-let intervalSize = 20000
+let intervalSize = 10000
 let newIntervalFlags = {}
 let desiredDepth = {
   ETH: 30,
@@ -31,6 +31,11 @@ let pendingOrders = {}
 let openOrders = []
 let iterator = 0
 let marketInfo = {}
+let pairCount = {
+  ETH: 0,
+  BTC: 0
+}
+
 
 const maxOrderDepth = 50
 
@@ -56,6 +61,8 @@ const start = async (markets, exchanges, tradeEngineCallback, orderActionCallbac
   const poloniex = new Poloniex()
 
   markets.forEach((market, i) => {
+    const base = market.slice(0, 3)
+    pairCount[base]++
     setTimeout(() => {
       poloniex.initOrderBook(market)
     },3000 * (i + 1))
@@ -120,7 +127,7 @@ const registerExchange = (exchange) => {
 const calculateAmount = (base, alt, side, rate) => {
   if (side === 'buy') {
     const fee = currentBalances[base].free * .0025
-    const altAmount = (currentBalances[base].free - fee) / rate
+    const altAmount = (currentBalances[base].free - fee) / rate / pairCount[base]
     const minimum = marketInfo[base + '-' + alt].limits.amount.min
     if (minimum < altAmount) {
       return altAmount
@@ -130,9 +137,7 @@ const calculateAmount = (base, alt, side, rate) => {
   if (side === 'sell') {
     const fee = currentBalances[alt].free * .0025
     const baseAmount = (currentBalances[alt].free - fee)
-
     const minimum = marketInfo[base + '-' + alt].limits.amount.min
-    console.log("What is baseAmount: ", baseAmount, minimum)
     if (minimum < baseAmount) {
       return baseAmount
     }

@@ -14,7 +14,7 @@ class TradeEngine extends Component {
   state = {
     markets: [],
     orders: [],
-    openOrders: {}
+    openOrders: {},
   }
 
   socket = null;
@@ -45,7 +45,14 @@ class TradeEngine extends Component {
     this.socket.emit('startEngine', {});
 
     this.socket.on('ENGINE_EVENT', (message) => {
+      if (this.state[message.market] && this.state[message.market].bids) {
+        message.prevBids = this.state[message.market].bids
+      }
+      if (this.state[message.market] && this.state[message.market].asks) {
+        message.prevAsks = this.state[message.market].asks
+      }
       this.setState({ [message.market]: message})
+
       console.log("Getting order book init: ", this.state[message.market])
       if (this.state.markets.indexOf(message.market) === -1) {
         this.setState({markets: [...this.state.markets, message.market]})
@@ -117,6 +124,8 @@ class TradeEngine extends Component {
                     market={market}
                     bids={this.state[market].bids}
                     asks={this.state[market].asks}
+                    prevBids={this.state[market].prevBids}
+                    prevAsks={this.state[market].prevAsks}
                     openOrders={this.state.openOrders[market]}
                   />
                 </Col>
