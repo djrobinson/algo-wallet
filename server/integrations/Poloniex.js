@@ -5,6 +5,7 @@ AND CONTIANS EXCHANGE SPECIFIC FORMATTERS
 const Moment = require('moment');
 const WebSocket = require('ws');
 const { Exchange } = require('../base/Exchange');
+const CryptoJS = require('crypto-js');
 
 class Poloniex extends Exchange {
 
@@ -42,19 +43,38 @@ class Poloniex extends Exchange {
     }
   }
 
-  initOrderBook(market) {
+  initOrderDelta() {
     const socket = new WebSocket(this.wsuri);
-
     socket.onopen = session => {
       console.log("Polo socket opened")
-      let params = {command: 'subscribe', channel: poloMarket};
+      const nonce = Date.now()
+      const payload = "nonce=" + nonce
+
+      let params = {
+        command: 'subscribe',
+        channel: '1000',
+        key: process.env.POLONIEX_API_KEY,
+        payload: payload,
+        sign: CryptoJS.HmacSHA512(payload, process.env.POLONIEX_SECRET).toString()
+      };
       socket.send(JSON.stringify(params));
       console.log("Init polo")
     }
+    this.socket = socket
+
+  }
+
+
+  initOrderBook(market) {
 
     const poloMarket = market.replace('-', '_');
 
-    socket.onerror = error => {
+    console.log("Polo socket opened")
+    let params = {command: 'subscribe', channel: poloMarket};
+    this.socket.send(JSON.stringify(params));
+    console.log("Init polo")
+
+    this.socket.onerror = error => {
       console.log("Poloniex WS Error!", error);
       this.emitOrderBook({
         type: 'WS_ERROR',
@@ -62,20 +82,23 @@ class Poloniex extends Exchange {
       });
     }
 
-    socket.onmessage = msg => {
+    this.socket.onmessage = msg => {
       if (msg && msg.data) {
         this.parseMarketDelta(msg.data, market);
       }
     }
 
-    socket.onclose = () => {
+    this.socket.onclose = () => {
       console.log("Poloniex Websocket connection closed");
     };
   }
 
   parseMarketDelta(marketDelta, market) {
     const data = JSON.parse(marketDelta);
-    if (data && data[2] && data[2][0] && data[2][0][1] && data[2][0][1].hasOwnProperty('orderBook')) {
+    console.log("What is parse data: ", data)
+    if (data && data[0] == 1000) {
+      console.log("POLONIEX EXCHANGE UPDATE: ", data[2])
+    } else if (data && data[2] && data[2][0] && data[2][0][1] && data[2][0][1].hasOwnProperty('orderBook')) {
       // Initial Response:
       let initOrderBook = {
         type: 'ORDER_BOOK_INIT',
@@ -111,8 +134,7 @@ class Poloniex extends Exchange {
       initOrderBook.asks = asks;
       initOrderBook.bids = bids;
       this.emitOrderBook(initOrderBook);
-    }
-    if (data && data[2]) {
+    } else if (data && data[2]) {
       data[2].forEach(delta => {
         if (delta[0] === 'o') {
           if (delta[1]) {

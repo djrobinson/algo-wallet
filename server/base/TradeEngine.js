@@ -65,7 +65,6 @@ let bittrex
 
 const start = async (markets, exchanges, tradeEngineCallback, orderActionCallback) => {
   exchanges.forEach(exch => {
-    console.log("isdfijwoiejfoiwejfoiwjefoijweoifjwoiefjwoiejfi")
     getBalances(exch)
   })
 
@@ -84,6 +83,7 @@ const start = async (markets, exchanges, tradeEngineCallback, orderActionCallbac
   setTimeout(() => { bittrex.initOrderBook(markets[0]) }, 3000)
 
   const poloniex = new Poloniex()
+  poloniex.initOrderDelta()
 
   markets.forEach((market, i) => {
     const base = market.slice(0, 3)
@@ -102,8 +102,6 @@ const start = async (markets, exchanges, tradeEngineCallback, orderActionCallbac
 
     })
   }, 6000)
-
-
 
   if (runType === 'ON_INTERVAL') {
     setInterval(() => {
@@ -171,7 +169,7 @@ const orderWorkflow = async (exchange, pair, side, rate) => {
       // THIS SHOULDN'T BE ALL ORDERS
       const orders = openOrders.slice(0)
       for (const order of orders) {
-        const cancelResponse = await cancelOrder(order.orderUuid)
+        const cancelResponse = await cancelOrder(exchange, order.orderUuid)
         log.bright.red( "Cancel results: ", cancelResponse )
       }
     }
@@ -180,7 +178,7 @@ const orderWorkflow = async (exchange, pair, side, rate) => {
       pendingOrders[asset] = true
       let orderResults
       try {
-        orderResults = await createOrder(alt + '/' + base, 'limit', side, amount, rate)
+        orderResults = await createOrder(exchange, alt + '/' + base, 'limit', side, amount, rate)
       } catch (e) {
         log.bright.red("Error while creating order ", e)
         orderResults = e
@@ -247,21 +245,21 @@ const getBalances = async (exchange) => {
   }
 }
 
-const createOrder = async (symbol, orderType, side, amount, price) => {
+const createOrder = async (exchange, symbol, orderType, side, amount, price) => {
   try {
-    log.bright.yellow("First Order: ", symbol, side, price, amount)
-    const response = await exchange.createOrder (symbol, orderType, side, amount, price)
+    log.bright.yellow("Order: ", symbol, side, price, amount)
+    const response = await x[exchange].createOrder (symbol, orderType, side, amount, price)
     log.bright.magenta ('Succeeded', response)
     return response
   } catch (e) {
-    log.bright.magenta (symbol, side, exchange.iso8601 (Date.now ()), e.constructor.name, e.message)
+    log.bright.magenta (symbol, side, x[exchange].iso8601 (Date.now ()), e.constructor.name, e.message)
     log.bright.magenta ('Failed')
   }
 }
 
-const cancelOrder = async (id) => {
+const cancelOrder = async (exchange, id) => {
   try {
-    const response = await exchange.cancelOrder(id)
+    const response = await x[exchange].cancelOrder(id)
     log.bright.magenta (response)
   } catch (e) {
     log.bright.magenta ('Cancel Failed')
