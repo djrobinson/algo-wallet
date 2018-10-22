@@ -37,7 +37,8 @@ let desiredDepth = {
 
 let currentBalances = {}
 let pendingOrders = {}
-let openOrders = []
+let pendingCancels = []
+let openOrders = {}
 let iterator = 0
 let marketInfo = {}
 let pairCount = {
@@ -52,6 +53,7 @@ let bittrex
 const start = async (markets, exchanges, tradeEngineCallback, orderActionCallback) => {
   exchanges.forEach(exch => {
     getBalances(exch)
+    openOrders[exch] = []
   })
 
   const bittrexArray = await x['bittrex'].fetchMarkets()
@@ -149,13 +151,13 @@ const orderWorkflow = async (exchange, pair, side, rate) => {
   const alt = pair.slice(pair.length - pair.indexOf('-'), pair.length)
   const amount = calculateAmount(exchange, base, alt, side, rate)
   if (amount) {
-    if (openOrders.length) {
+    if (openOrders[exchange].length) {
       console.log("We've got an update!!")
       // Clone and erase openOrders
       // THIS SHOULDN'T BE ALL ORDERS
-      const orders = openOrders.slice(0)
+      const orders = openOrders[exchange].slice(0)
       for (const order of orders) {
-        const cancelResponse = await cancelOrder(exchange, order.orderUuid)
+        const cancelResponse = await cancelOrder(order)
         log.bright.red( "Cancel results: ", cancelResponse )
       }
     }
@@ -229,7 +231,7 @@ const createOrder = async (exchange, symbol, orderType, side, amount, price) => 
   try {
     log.bright.yellow("Order: ", symbol, side, price, amount)
     const response = await x[exchange].createOrder (symbol, orderType, side, amount, price)
-    log.bright.magenta ('Succeeded', response)
+    log.bright.magenta ('Create Order Succeeded: ', exchange, symbol, side, amount)
     return response
   } catch (e) {
     log.bright.magenta (symbol, side, x[exchange].iso8601 (Date.now ()), e.constructor.name, e.message)
@@ -237,21 +239,35 @@ const createOrder = async (exchange, symbol, orderType, side, amount, price) => 
   }
 }
 
-const cancelOrder = async (exchange, id) => {
-  try {
-    const response = await x[exchange].cancelOrder(id)
-    log.bright.magenta (response)
-  } catch (e) {
-    log.bright.magenta ('Cancel Failed')
+const cancelOrder = async (order) => {
+  const exchange = order.exchange
+  const id = order.id
+  if (pendingCancels.indexOf(id) === -1) {
+    console.log("What is ID for cancel ", id)
+    pendingCancels.push(id)
+    try {
+      const response = await x[exchange].cancelOrder(id)
+      log.bright.magenta (response)
+      if (response) {
+        const cancelIndex = pendingCancels.indexOf(id)
+        pendingCancels.splice(cancelIndex, 1)
+      }
+
+    } catch (e) {
+      log.bright.magenta ('Cancel Failed', e, order)
+    }
+  } else {
+    console.log("Dupe cancel prevented")
   }
 }
 
 const handleOrderDelta = (delta) => {
   if (delta.type === 'OPEN') {
-    openOrders.push(delta)
+    openOrders[delta.exchange].push(delta)
   }
   if (delta.type === 'CANCEL') {
-    openOrders = openOrders.filter(o => (o.orderUuid !== delta.orderUuid))
+    console.log("We're on the handle order cancellation: ", delta)
+    openOrders[delta.exchange] = openOrders[delta.exchange].filter(o => (o.id !== delta.id))
   }
 }
 

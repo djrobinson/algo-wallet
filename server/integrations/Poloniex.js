@@ -84,7 +84,7 @@ class Poloniex extends Exchange {
 
     this.socket.onmessage = msg => {
       if (msg && msg.data) {
-        this.parseMarketDelta(msg.data, market);
+        this.parseResponse(msg.data, market);
       }
     }
 
@@ -93,10 +93,55 @@ class Poloniex extends Exchange {
     };
   }
 
-  parseMarketDelta(marketDelta, market) {
+  parseOrderDelta(data, market) {
+    console.log("POLO ORDER DATA: ", data)
+    const orderTypeLookup = {
+      0: 'SELL',
+      1: 'BUY'
+    }
+    if (data[0] === 'n') {
+      const delta = {
+        id: data[2],
+        type: 'OPEN',
+        exchange: this.exchangeName,
+        market: market,
+        orderType: orderTypeLookup[data[3]],
+        amount: data[5],
+        rate: data[4]
+      }
+      this.emitOrderDelta(delta)
+    }
+    if (data[0] === 'o') {
+      if (!parseFloat(data[2])) {
+        console.log("We're getting a cancel")
+        const delta = {
+          id: data[1],
+          type: 'CANCEL',
+          exchange: this.exchangeName,
+          market: market
+        }
+        this.emitOrderDelta(delta)
+      }
+      console.log("Unhandled POLO order event: ", data)
+      const delta = {
+        id: data[2],
+        type: 'OPEN',
+        exchange: this.exchangeName,
+        market: market,
+        orderType: orderTypeLookup[data[3]],
+        amount: data[5],
+        rate: data[4]
+      }
+    }
+  }
+
+  parseResponse(marketDelta, market) {
     const data = JSON.parse(marketDelta)
-    if (data && data[0] == 1000) {
-      console.log("POLONIEX EXCHANGE UPDATE: ", data[2])
+    if (data && data[0] === 1000) {
+      if (data[2].length) {
+        data[2].forEach(d => this.parseOrderDelta(d, market))
+      }
+
     } else if (data && data[2] && data[2][0] && data[2][0][1] && data[2][0][1].hasOwnProperty('orderBook')) {
       // Initial Response:
       let initOrderBook = {

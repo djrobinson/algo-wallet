@@ -173,12 +173,10 @@ class Bittrex extends Exchange {
         'CANCEL'
       ]
       const delta = {
-        uuid: orderDelta.w,
+        id: orderDelta.o.OU,
         type: typeMap[parseInt(orderDelta.TY)],
-        orderUuid: orderDelta.o.OU,
         exchange: this.exchangeName,
         market: orderDelta.o.E,
-        uuid: orderDelta.o.U,
         orderType: orderDelta.o.OT,
         amount: orderDelta.o.Q,
         rate: orderDelta.o.X
