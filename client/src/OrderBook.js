@@ -10,8 +10,6 @@ class OrderBook extends Component {
     prevAsks: {}
   }
 
-  socket = null;
-
   componentDidMount() {
     console.log("This.props: ", this.props)
   }
@@ -71,7 +69,6 @@ class OrderBook extends Component {
                     null
                   )
                 }
-
               }))
             }
             {
@@ -100,15 +97,15 @@ class OrderBook extends Component {
 
                   const changeClass = isChangeAmount ? " amount-change" : ""
                   const newClass = isNewOrder ? " new-order" : ""
-                const openOrderClass = openRates.indexOf(rate) !== -1 ? " active-order" : ""
-                const overlapClass = this.props.highestBid > this.props.asks[ask].rate ? " overlap" : ""
-                isOverlap = overlapClass;
-                return (
-                  <Row key={i} className={this.props.asks[ask].exchange + overlapClass + openOrderClass + changeClass + newClass +" order-row ask-row"}>
-                    <Col md={6}><span>{numeral(this.props.asks[ask].rate).format('0.00000000')}</span></Col>
-                    <Col md={6}><span>{numeral(this.props.asks[ask].amount).format('0.00000000')}</span></Col>
-                  </Row>
-                );
+                  const openOrderClass = openRates.indexOf(rate) !== -1 ? " active-order" : ""
+                  const overlapClass = this.props.highestBid > this.props.asks[ask].rate ? " overlap" : ""
+                  isOverlap = overlapClass;
+                  return (
+                    <Row key={i} className={this.props.asks[ask].exchange + overlapClass + openOrderClass + changeClass + newClass +" order-row ask-row"}>
+                      <Col md={6}><span>{numeral(this.props.asks[ask].rate).format('0.00000000')}</span></Col>
+                      <Col md={6}><span>{numeral(this.props.asks[ask].amount).format('0.00000000')}</span></Col>
+                    </Row>
+                  );
                 } else {
                   return (
                     null

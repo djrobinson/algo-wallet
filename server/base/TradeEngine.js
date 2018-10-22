@@ -17,6 +17,24 @@ let exchange = new ccxt.bittrex ({
     'enableRateLimit': true, // add this
   })
 
+const x = {
+  bittrex: new ccxt.bittrex ({
+    'apiKey': process.env.BITTREX_API_KEY,
+    'secret': process.env.BITTREX_SECRET,
+    'verbose': false, // set to true to see more debugging output
+    'timeout': 60000,
+    'enableRateLimit': true, // add this
+  }),
+  poloniex: new ccxt.poloniex ({
+    'apiKey': process.env.POLONIEX_API_KEY,
+    'secret': process.env.POLONIEX_SECRET,
+    'verbose': false, // set to true to see more debugging output
+    'timeout': 60000,
+    'enableRateLimit': true, // add this
+  })
+}
+
+
 // TODO: WILL EVENTUALLY BE INPUTS
 let runType = 'ON_INTERVAL'
 let intervalSize = 10000
@@ -46,8 +64,15 @@ let bittrex
 
 
 const start = async (markets, exchanges, tradeEngineCallback, orderActionCallback) => {
-  getBalances()
-  const marketArray = await exchange.fetchMarkets()
+  exchanges.forEach(exch => {
+    console.log("isdfijwoiejfoiwejfoiwjefoijweoifjwoiefjwoiejfi")
+    getBalances(exch)
+  })
+
+  const bittrexArray = await x['bittrex'].fetchMarkets()
+  const poloArray = await x['poloniex'].fetchMarkets()
+
+  const marketArray = bittrexArray.concat(poloArray)
   marketInfo = marketArray.reduce((acc, market) => {
     acc[market.id] = market
     return acc
@@ -114,20 +139,10 @@ const stop = () => {
   }
 }
 
-const registerExchange = (exchange) => {
-  exchange = new ccxt[exchange] ({
-    'apiKey': process.env.BITTREX_API_KEY,
-    'secret': process.env.BITTREX_SECRET,
-    'verbose': false, // set to true to see more debugging output
-    'timeout': 60000,
-    'enableRateLimit': true, // add this
-  })
-}
-
-const calculateAmount = (base, alt, side, rate) => {
+const calculateAmount = (exchange, base, alt, side, rate) => {
   if (side === 'buy') {
-    const fee = currentBalances[base].free * .0025
-    const altAmount = (currentBalances[base].free - fee) / rate / pairCount[base]
+    const fee = currentBalances[exchange][base].free * .0025
+    const altAmount = (currentBalances[exchange][base].free - fee) / rate / pairCount[base]
     const minimum = marketInfo[base + '-' + alt].limits.amount.min
     if (minimum < altAmount) {
       return altAmount
@@ -135,8 +150,8 @@ const calculateAmount = (base, alt, side, rate) => {
     return null
   }
   if (side === 'sell') {
-    const fee = currentBalances[alt].free * .0025
-    const baseAmount = (currentBalances[alt].free - fee)
+    const fee = currentBalances[exchange][alt].free * .0025
+    const baseAmount = (currentBalances[exchange][alt].free - fee)
     const minimum = marketInfo[base + '-' + alt].limits.amount.min
     if (minimum < baseAmount) {
       return baseAmount
@@ -145,10 +160,10 @@ const calculateAmount = (base, alt, side, rate) => {
   }
 }
 
-const orderWorkflow = async (pair, side, rate) => {
+const orderWorkflow = async (exchange, pair, side, rate) => {
   const base = pair.slice(0, pair.indexOf('-'))
   const alt = pair.slice(pair.length - pair.indexOf('-'), pair.length)
-  const amount = calculateAmount(base, alt, side, rate)
+  const amount = calculateAmount(exchange, base, alt, side, rate)
   if (amount) {
     if (openOrders.length) {
       console.log("We've got an update!!")
@@ -188,32 +203,31 @@ const runStrategy = async (event) => {
   console.log("Running strategy", event.market)
   const pair = event.market
   const side = 'sell'
-  if (event.exchange === 'bittrex') {
+  const exchange = event.exchange
+  if (exchange === 'bittrex') {
     if (masterBook[pair].summary.bidDesiredDepth) {
       console.log("Executing buy")
       const buyRate = masterBook[pair].summary.bidDesiredDepth
-      const buyResult = await orderWorkflow(pair, 'buy', buyRate)
+      const buyResult = await orderWorkflow(exchange, pair, 'buy', buyRate)
       log.bright.green( "Buy order result: ", buyResult )
     }
 
     if (masterBook[pair].summary.askDesiredDepth) {
       console.log("Executing sell")
       const sellRate = masterBook[pair].summary.askDesiredDepth
-      const sellResult = await orderWorkflow(pair, 'sell', sellRate)
+      const sellResult = await orderWorkflow(exchange, pair, 'sell', sellRate)
       log.bright.red( "Sell order result: ", sellResult )
     }
     iterator++
   }
-
-
 }
 
-const getBalances = async () => {
-
+const getBalances = async (exchange) => {
   try {
+
       // fetch account balance from the exchange, save to global variable
-      currentBalances = await exchange.fetchBalance()
-      log.bright.yellow(currentBalances)
+      currentBalances[exchange] = await x[exchange].fetchBalance()
+      log.bright.yellow(currentBalances[exchange].free)
   } catch (e) {
       if (e instanceof ccxt.DDoSProtection || e.message.includes ('ECONNRESET')) {
           log.bright.yellow ('[DDoS Protection] ' + e.message)
