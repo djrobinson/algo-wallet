@@ -1,13 +1,42 @@
+
+.order-book {
+  height: 100vw;
+  width: 100%;
+  padding: 5px;
+}
+
+.order-book-scroll {
+  height: 100vw;
+  width: 100%;
+  position: relative;
+  overflow: scroll;
+}
+::-webkit-scrollbar {
+  width: 0px;
+  background: transparent;
+}
+
+.bid-book {
+  width: 40%;
+  width: -webkit-calc(50% - 15px);
+  top: 0;
+}
+
+.ask-book {
+  width: 40%;
+  width: -webkit-calc(50% - 15px);
+  top: 50vw;
+  margin-left: 50%;
+}
+
 .order-row {
-  padding-top: 10px;
-  padding-bottom: 10px;
+  position:relative;
+  padding-top: 5px;
+  padding-bottom: 5px;
   text-align: left;
   border-top: solid 1px gray;
 }
 
-.order-book {
-  padding: 40px;
-}
 
 .positive {
   color: green;
@@ -32,8 +61,8 @@
 
 .active-order {
 
-  border-right: solid 5px gold;
-  border-left: solid 5px gold;
+  border-right: solid 25px gold;
+  border-left: solid 25px gold;
 }
 
 .new-order {
@@ -56,22 +85,30 @@
   text-transform: uppercase;
 }
 
+.ask-row {
+  margin-right: 10px;
+}
+
+.bid-row {
+  margin-left: 10px;
+}
+
 .ask-row.poloniex {
   box-sizing: border-box;
-  border-left: solid 20px turquoise;
+  border-left: solid 10px turquoise;
 }
 
 .ask-row.bittrex {
   box-sizing: border-box;
-  border-left: solid 20px maroon;
+  border-left: solid 10px maroon;
 }
 
 .bid-row.poloniex {
   box-sizing: border-box;
-  border-right: solid 20px turquoise;
+  border-right: solid 10px turquoise;
 }
 
 .bid-row.bittrex {
   box-sizing: border-box;
-  border-right: solid 20px maroon;
+  border-right: solid 10px maroon;
 }

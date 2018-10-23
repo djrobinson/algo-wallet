@@ -28,7 +28,7 @@ const x = {
 
 // TODO: WILL EVENTUALLY BE INPUTS
 let runType = 'ON_INTERVAL'
-let intervalSize = 10000
+let intervalSize = 20000
 let newIntervalFlags = {}
 let desiredDepth = {
   ETH: 30,
@@ -116,7 +116,7 @@ const start = async (markets, exchanges, tradeEngineCallback, orderActionCallbac
         ...masterBook[market]
       })
     })
-  }, 5000)
+  }, 1000)
 }
 
 const stop = () => {

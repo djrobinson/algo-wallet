@@ -18,11 +18,6 @@ class App extends Component {
   render() {
     return (
       <div className="App">
-        <Row className="header-row">
-          <div className="header">
-            <h1>ALGOWALLET</h1>
-          </div>
-        </Row>
         <TradeEngine />
       </div>
     );

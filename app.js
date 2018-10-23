@@ -13,7 +13,7 @@ const {start, stop} = require('./server-build/base/TradeEngine');
 const indexRouter = require('./server-build/api/index');
 const bodyParser = require('body-parser');
 
-const db = require('./server-build/db/db');
+// const db = require('./server-build/db/db');
 
 app.use(logger('dev'));
 app.use(express.json());
@@ -44,7 +44,7 @@ io.on('connection', client => {
 
   client.on('startEngine', req => {
     console.log("What is the req from start engine: ", req)
-    const markets = ['BTC-ETH', 'BTC-LTC']
+    const markets = ['BTC-ETH', 'BTC-LTC', 'BTC-XMR']
     const exchanges = ['bittrex', 'poloniex']
     start(markets, exchanges, tradeEngineCallback, orderActionCallback)
   })

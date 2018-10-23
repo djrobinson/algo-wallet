@@ -126,10 +126,7 @@ class TradeEngine extends Component {
               this.state.orders.map((order, i) => {
                 return (
                   <div key={i} className="order-action-tile">
-                    <p>Exchange: {order.exchange}</p>
-                    <p>Order: {order.market}</p>
-                    <p>Type: {order.type}</p>
-                    <p>Rate: {order.rate}</p>
+                    <p>Exchange: {order.exchange} | Order: {order.market} | Type: {order.type} | Rate: {order.rate}</p>
                   </div>
                 )
               })

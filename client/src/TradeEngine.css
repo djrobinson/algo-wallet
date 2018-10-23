@@ -5,11 +5,8 @@
 }
 
 .order-action-tile {
-  float: right;
-  flex-direction: column;
-  display: inline-flex;
-  height: 150px;
-  width: 150px;
-  border: solid 3px gray;
-  margin: 5px;
+  border-top: solid 1px gray;
+  flex-direction: row;
+  width: 100%;
+  text-align: left;
 }
