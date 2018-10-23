@@ -338,10 +338,10 @@ const updatePriceAndRunStrategy = (event) => {
   let type = ''
   let recalculate = false
   if (masterBook.hasOwnProperty(market)) {
+    console.log("What market is running: ", market)
     const amount = event.amount
     const rate = event.rate
     const exchange = event.exchange
-    const market = event.market
     const identifier = event.rateString
     if (event.type === 'BID_UPDATE') {
       type = 'bids'
@@ -392,14 +392,16 @@ const maintainOrderBook = (book, identifier, exchange, type, market, rate, amoun
     let order = {
       exchange: exchange,
       rate: rate,
+      market: market,
       amount: amount
     }
     newBook[identifier] = order
     return [newBook, book]
-  } else {
+  } else if (parseFloat(amount) > 0) {
     let order = {
       exchange: exchange,
       rate: rate,
+      market: market,
       amount: amount
     }
     newBook[identifier] = order
