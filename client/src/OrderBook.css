@@ -1,4 +1,14 @@
 
+
+.volume-bar {
+  position: absolute;
+
+  height: 100%;
+  z-index: 99;
+  background-color: rgba(0, 240, 0, .3);
+}
+
+
 .order-book {
   height: 100vw;
   width: 100%;

@@ -113,6 +113,7 @@ class TradeEngine extends Component {
                     market={market}
                     bids={this.state[market].bids}
                     asks={this.state[market].asks}
+                    summary={this.state[market].summary}
                     prevBids={this.state[market].prevBids}
                     prevAsks={this.state[market].prevAsks}
                     openOrders={this.state.openOrders[market]}

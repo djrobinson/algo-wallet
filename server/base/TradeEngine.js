@@ -27,7 +27,7 @@ const x = {
 }
 
 // TODO: WILL EVENTUALLY BE INPUTS
-let runType = 'ON_INTERVAL'
+let runType = 'NONE'
 let intervalSize = 20000
 let newIntervalFlags = {}
 let desiredDepth = {
@@ -338,7 +338,6 @@ const updatePriceAndRunStrategy = (event) => {
   let type = ''
   let recalculate = false
   if (masterBook.hasOwnProperty(market)) {
-    console.log("What market is running: ", market)
     const amount = event.amount
     const rate = event.rate
     const exchange = event.exchange
@@ -417,8 +416,14 @@ const maintainOrderBook = (book, identifier, exchange, type, market, rate, amoun
     sortedKeys.forEach(o => {
       sortedNewBook[o] = newBook[o]
     })
-    return [sortedNewBook, book]
+    newBook = sortedNewBook
   }
+  let sumAccumulator = 0
+
+  Object.keys(newBook).forEach(o => {
+     sumAccumulator = sumAccumulator + newBook[o].amount
+     newBook[o].sum = sumAccumulator
+  })
   return [newBook, book]
 }
 
@@ -443,9 +448,10 @@ const checkPriceAndVolume = (type, market, newBook, oldBook) => {
       summary.isPriceChange = true
     }
     summary.highestBid = newBid
-    const { volumeAt50Orders, desiredDepthRate } = tallyVolumeStats(newBook, newKeys, desiredDepth[base])
+    const { volumeAt50Orders, desiredDepthRate, maxAmount } = tallyVolumeStats(newBook, newKeys, desiredDepth[base])
     summary.bidVolumeAt50Orders = volumeAt50Orders
     summary.bidDesiredDepth = desiredDepthRate
+    summary.largestBid = maxAmount
     // Determine time (use Date.now() to group into minute categories)
     // Check against last summary to determine how much it has changed
     // If it is past a certain interval
@@ -459,10 +465,11 @@ const checkPriceAndVolume = (type, market, newBook, oldBook) => {
     if (newAsk != oldAsk) {
       summary.isPriceChange = true
     }
-    const { volumeAt50Orders, desiredDepthRate } = tallyVolumeStats(newBook, newKeys, desiredDepth[base])
+    const { volumeAt50Orders, desiredDepthRate, maxAmount } = tallyVolumeStats(newBook, newKeys, desiredDepth[base])
     summary.lowestAsk = newAsk
     summary.askVolumeAt50Orders = volumeAt50Orders
     summary.askDesiredDepth = desiredDepthRate
+    summary.largestAsk = maxAmount
   }
   const newSummary = {
     ...oldSummary,
@@ -473,6 +480,7 @@ const checkPriceAndVolume = (type, market, newBook, oldBook) => {
 
 const tallyVolumeStats = (book, newKeys, desiredDepth) => {
   let volumeCounter = 0
+  let maxAmount = 0
   let foundOrder = false
   let desiredDepthRate
   newKeys.forEach((order, i) => {
@@ -483,10 +491,14 @@ const tallyVolumeStats = (book, newKeys, desiredDepth) => {
     } else if (i < 50) {
       volumeCounter += (book[order].amount * book[order].rate)
     }
+    if ( book[order].amount > maxAmount ) {
+      maxAmount = book[order].amount
+    }
   })
   return {
     volumeAt50Orders: volumeCounter,
-    desiredDepthRate
+    desiredDepthRate,
+    maxAmount
   }
 }
 
