@@ -448,10 +448,11 @@ const checkPriceAndVolume = (type, market, newBook, oldBook) => {
       summary.isPriceChange = true
     }
     summary.highestBid = newBid
-    const { volumeAt50Orders, desiredDepthRate, maxAmount } = tallyVolumeStats(newBook, newKeys, desiredDepth[base])
+    const { volumeAt50Orders, desiredDepthRate, maxAmount, totalBook } = tallyVolumeStats(newBook, newKeys, desiredDepth[base])
     summary.bidVolumeAt50Orders = volumeAt50Orders
     summary.bidDesiredDepth = desiredDepthRate
     summary.largestBid = maxAmount
+    summary.totalBids = totalBook
     // Determine time (use Date.now() to group into minute categories)
     // Check against last summary to determine how much it has changed
     // If it is past a certain interval
@@ -465,11 +466,12 @@ const checkPriceAndVolume = (type, market, newBook, oldBook) => {
     if (newAsk != oldAsk) {
       summary.isPriceChange = true
     }
-    const { volumeAt50Orders, desiredDepthRate, maxAmount } = tallyVolumeStats(newBook, newKeys, desiredDepth[base])
+    const { volumeAt50Orders, desiredDepthRate, maxAmount, totalBook } = tallyVolumeStats(newBook, newKeys, desiredDepth[base])
     summary.lowestAsk = newAsk
     summary.askVolumeAt50Orders = volumeAt50Orders
     summary.askDesiredDepth = desiredDepthRate
     summary.largestAsk = maxAmount
+    summary.totalAsks = totalBook
   }
   const newSummary = {
     ...oldSummary,
@@ -483,6 +485,7 @@ const tallyVolumeStats = (book, newKeys, desiredDepth) => {
   let maxAmount = 0
   let foundOrder = false
   let desiredDepthRate
+  let totalBook = 0
   newKeys.forEach((order, i) => {
     if (volumeCounter > desiredDepth && !foundOrder) {
       desiredDepthRate = book[order].rate
@@ -494,11 +497,13 @@ const tallyVolumeStats = (book, newKeys, desiredDepth) => {
     if ( book[order].amount > maxAmount ) {
       maxAmount = book[order].amount
     }
+    totalBook += book[order].amount
   })
   return {
     volumeAt50Orders: volumeCounter,
     desiredDepthRate,
-    maxAmount
+    maxAmount,
+    totalBook
   }
 }
 

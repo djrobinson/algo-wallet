@@ -12,7 +12,7 @@ class OrderBook extends Component {
 
   scrollToBottom = () => {
     console.log("scroll bottom")
-    this.orderScroll.scrollTop = this.bidAskSpread.offsetTop - 425;
+    this.orderScroll.scrollTop = this.bidAskSpread.offsetTop - 600;
   }
 
   componentDidMount() {
@@ -20,7 +20,7 @@ class OrderBook extends Component {
   }
 
   componentDidUpdate() {
-    this.scrollToBottom();
+    // this.scrollToBottom();
   }
 
   render() {
@@ -61,8 +61,11 @@ class OrderBook extends Component {
                     const openOrderClass = openRates.indexOf(rate) !== -1 ? " active-order" : ""
                     const overlapClass = this.props.highestBid > this.props.asks[ask].rate ? " overlap" : ""
                     isOverlap = overlapClass;
+                    const volumeBarStyle = Math.floor(this.props.asks[ask].sum / this.props.summary.totalAsks * 100)
                     return (
                       <Row key={i} className={this.props.asks[ask].exchange + overlapClass + openOrderClass + changeClass + newClass +" order-row ask-row"}>
+                        <div className="volume-bar-ask" style={{width: volumeBarStyle + '%'}}>
+                        </div>
                         <Col md={4}><span>{numeral(this.props.asks[ask].rate).format('0.00000000')}</span></Col>
                         <Col md={4}><span>{numeral(this.props.asks[ask].amount).format('0.00000000')}</span></Col>
                         <Col md={4}><span>{numeral(this.props.asks[ask].sum).format('0.00000000')}</span></Col>
@@ -106,11 +109,11 @@ class OrderBook extends Component {
                     const openOrderClass = openRates.indexOf(rate) !== -1 ? " active-order" : ""
                     const overlapClass = this.props.lowestAsk > this.props.bids[bid].rate ? " overlap" : ""
                     isOverlap = overlapClass;
-                    const volumeBarStyle = Math.floor(this.props.bids[bid].amount / this.props.summary.largestBid * 100)
+                    const volumeBarStyle = Math.floor(this.props.bids[bid].sum / this.props.summary.totalBids * 100)
                     let test = 24
                     return (
                       <Row key={i} className={this.props.bids[bid].exchange + overlapClass + openOrderClass + changeClass + newClass + openOrderClass + " order-row bid-row"}>
-                        <div className="volume-bar" style={{width: volumeBarStyle + '%'}}>
+                        <div className="volume-bar-bid" style={{width: volumeBarStyle + '%'}}>
                         </div>
                         <Col md={4}><span>{numeral(this.props.bids[bid].amount).format('0.00000000')}</span></Col>
                         <Col md={4}><span>{numeral(this.props.bids[bid].rate).format('0.00000000')}</span></Col>
