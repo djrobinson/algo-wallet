@@ -16,79 +16,79 @@ class Poloniex extends Exchange {
     this.wsuri = 'wss://api2.poloniex.com:443';
     this.socket
     this.marketMap = {
-      7  : 'BTC_BCN',
-      14 : 'BTC_BTS',
-      15 : 'BTC_BURST',
-      20 : 'BTC_CLAM',
-      25 : 'BTC_DGB',
-      27 : 'BTC_DOGE',
-      24 : 'BTC_DASH',
-      38 : 'BTC_GAME',
-      43 : 'BTC_HUC',
-      50 : 'BTC_LTC',
-      51 : 'BTC_MAID',
-      58 : 'BTC_OMNI',
-      61 : 'BTC_NAV',
-      64 : 'BTC_NMC',
-      69 : 'BTC_NXT',
-      75 : 'BTC_PPC',
-      89 : 'BTC_STR',
-      92 : 'BTC_SYS',
-      97 : 'BTC_VIA',
-      100: 'BTC_VTC',
-      108: 'BTC_XCP',
-      114: 'BTC_XMR',
-      116: 'BTC_XPM',
-      117: 'BTC_XRP',
-      112: 'BTC_XEM',
-      148: 'BTC_ETH',
-      150: 'BTC_SC',
-      155: 'BTC_FCT',
-      162: 'BTC_DCR',
-      163: 'BTC_LSK',
-      167: 'BTC_LBC',
-      168: 'BTC_STEEM',
-      170: 'BTC_SBD',
-      171: 'BTC_ETC',
-      174: 'BTC_REP',
-      177: 'BTC_ARDR',
-      178: 'BTC_ZEC',
-      182: 'BTC_STRAT',
-      184: 'BTC_PASC',
-      185: 'BTC_GNT',
-      189: 'BTC_BCH',
-      192: 'BTC_ZRX',
-      194: 'BTC_CVC',
-      196: 'BTC_OMG',
-      198: 'BTC_GAS',
-      200: 'BTC_STORJ',
-      201: 'BTC_EOS',
-      204: 'BTC_SNT',
-      207: 'BTC_KNC',
-      210: 'BTC_BAT',
-      213: 'BTC_LOOM',
-      221: 'BTC_QTUM',
-      232: 'BTC_BNT',
-      229: 'BTC_MANA',
-      166: 'ETH_LSK',
-      169: 'ETH_STEEM',
-      172: 'ETH_ETC',
-      176: 'ETH_REP',
-      179: 'ETH_ZEC',
-      186: 'ETH_GNT',
-      190: 'ETH_BCH',
-      193: 'ETH_ZRX',
-      195: 'ETH_CVC',
-      197: 'ETH_OMG',
-      199: 'ETH_GAS',
-      202: 'ETH_EOS',
-      205: 'ETH_SNT',
-      208: 'ETH_KNC',
-      211: 'ETH_BAT',
-      214: 'ETH_LOOM',
-      222: 'ETH_QTUM',
-      233: 'ETH_BNT',
-      230: 'ETH_MANA'
+      7  : 'BTC-BCN',
+      14 : 'BTC-BTS',
+      15 : 'BTC-BURST',
+      20 : 'BTC-CLAM',
+      25 : 'BTC-DGB',
+      27 : 'BTC-DOGE',
+      24 : 'BTC-DASH',
+      38 : 'BTC-GAME',
+      43 : 'BTC-HUC',
+      50 : 'BTC-LTC',
+      51 : 'BTC-MAID',
+      58 : 'BTC-OMNI',
+      61 : 'BTC-NAV',
+      64 : 'BTC-NMC',
+      69 : 'BTC-NXT',
+      75 : 'BTC-PPC',
+      89 : 'BTC-STR',
+      92 : 'BTC-SYS',
+      97 : 'BTC-VIA',
+      100: 'BTC-VTC',
+      108: 'BTC-XCP',
+      114: 'BTC-XMR',
+      116: 'BTC-XPM',
+      117: 'BTC-XRP',
+      112: 'BTC-XEM',
+      148: 'BTC-ETH',
+      150: 'BTC-SC',
+      155: 'BTC-FCT',
+      162: 'BTC-DCR',
+      163: 'BTC-LSK',
+      167: 'BTC-LBC',
+      168: 'BTC-STEEM',
+      170: 'BTC-SBD',
+      171: 'BTC-ETC',
+      174: 'BTC-REP',
+      177: 'BTC-ARDR',
+      178: 'BTC-ZEC',
+      182: 'BTC-STRAT',
+      184: 'BTC-PASC',
+      185: 'BTC-GNT',
+      189: 'BTC-BCH',
+      192: 'BTC-ZRX',
+      194: 'BTC-CVC',
+      196: 'BTC-OMG',
+      198: 'BTC-GAS',
+      200: 'BTC-STORJ',
+      201: 'BTC-EOS',
+      204: 'BTC-SNT',
+      207: 'BTC-KNC',
+      210: 'BTC-BAT',
+      213: 'BTC-LOOM',
+      221: 'BTC-QTUM',
+      232: 'BTC-BNT',
+      229: 'BTC-MANA',
+      166: 'ETH-LSK',
+      169: 'ETH-STEEM',
+      172: 'ETH-ETC',
+      176: 'ETH-REP',
+      179: 'ETH-ZEC',
+      186: 'ETH-GNT',
+      190: 'ETH-BCH',
+      193: 'ETH-ZRX',
+      195: 'ETH-CVC',
+      197: 'ETH-OMG',
+      199: 'ETH-GAS',
+      202: 'ETH-EOS',
+      205: 'ETH-SNT',
+      208: 'ETH-KNC',
+      211: 'ETH-BAT',
+      214: 'ETH-LOOM',
+      222: 'ETH-QTUM',
+      233: 'ETH-BNT',
+      230: 'ETH-MANA'
     }
     console.log("Starting polo")
   }
@@ -118,10 +118,13 @@ class Poloniex extends Exchange {
     }
   }
 
-  initOrderDelta() {
+  initExchange() {
     const socket = new WebSocket(this.wsuri);
+    const boundEmitExchangeReady = this.emitExchangeReady.bind(this)
+    const exchangeName = this.exchangeName
     socket.onopen = session => {
       console.log("Polo socket opened")
+      boundEmitExchangeReady(exchangeName)
       const nonce = Date.now()
       const payload = "nonce=" + nonce
 
@@ -135,21 +138,7 @@ class Poloniex extends Exchange {
       socket.send(JSON.stringify(params));
       console.log("Init polo")
     }
-    this.socket = socket
-
-  }
-
-
-  initOrderBook(market) {
-
-    const poloMarket = market.replace('-', '_');
-
-    console.log("Polo socket opened")
-    let params = {command: 'subscribe', channel: poloMarket};
-    this.socket.send(JSON.stringify(params));
-    console.log("Init polo")
-
-    this.socket.onerror = error => {
+    socket.onerror = error => {
       console.log("Poloniex WS Error!", error);
       this.emitOrderBook({
         type: 'WS_ERROR',
@@ -157,18 +146,29 @@ class Poloniex extends Exchange {
       });
     }
 
-    this.socket.onmessage = msg => {
+    socket.onmessage = msg => {
       if (msg && msg.data) {
-        this.parseResponse(msg.data, market);
+        this.parseResponse(msg.data);
       }
     }
 
-    this.socket.onclose = () => {
+    socket.onclose = () => {
       console.log("Poloniex Websocket connection closed");
     };
+    this.socket = socket
+
   }
 
-  parseOrderDelta(data, market) {
+
+  initOrderBook(market) {
+    console.log("Input into polo init: ", market)
+
+    const poloMarket = market.replace('-', '_');
+    let params = {command: 'subscribe', channel: poloMarket};
+    this.socket.send(JSON.stringify(params));
+  }
+
+  parseOrderDelta(data) {
     const orderTypeLookup = {
       0: 'SELL',
       1: 'BUY'
@@ -178,7 +178,7 @@ class Poloniex extends Exchange {
         id: data[2],
         type: 'OPEN',
         exchange: this.exchangeName,
-        market: market,
+        market: data[1],
         orderType: orderTypeLookup[data[3]],
         amount: data[5],
         rate: data[4]
@@ -191,8 +191,7 @@ class Poloniex extends Exchange {
         const delta = {
           id: data[1],
           type: 'CANCEL',
-          exchange: this.exchangeName,
-          market: market
+          exchange: this.exchangeName
         }
         this.emitOrderDelta(delta)
       }
@@ -200,15 +199,17 @@ class Poloniex extends Exchange {
     }
   }
 
-  parseResponse(marketDelta, market) {
+  parseResponse(marketDelta) {
     const data = JSON.parse(marketDelta)
-    console.log("What is polo data: ", data)
     if (data && data[0] === 1000) {
-      if (data[2].length) {
-        data[2].forEach(d => this.parseOrderDelta(d, market))
+      if (data[2] && data[2].length) {
+        data[2].forEach(d => this.parseOrderDelta(d))
       }
 
     } else if (data && data[2] && data[2][0] && data[2][0][1] && data[2][0][1].hasOwnProperty('orderBook')) {
+
+      const market = this.marketMap[data[0]]
+      console.log("Polo parse order book", market)
       // Initial Response:
       let initOrderBook = {
         type: 'ORDER_BOOK_INIT',
@@ -245,15 +246,15 @@ class Poloniex extends Exchange {
       initOrderBook.bids = bids;
       this.emitOrderBook(initOrderBook);
     } else if (data && data[2]) {
-      const mkt = this.marketMap[data[0]]
+      const market = this.marketMap[data[0]]
       data[2].forEach(delta => {
         if (delta[0] === 'o') {
           if (delta[1]) {
             // 1 for Bid
             let bidChange = {
               type: 'BID_UPDATE',
-              market: mkt,
-              rateString: this.exchangeName + mkt + delta[2],
+              market: market,
+              rateString: this.exchangeName + market + delta[2],
               rate: parseFloat(delta[2]),
               amount: parseFloat(delta[3])
             }
@@ -262,8 +263,8 @@ class Poloniex extends Exchange {
             // 0 for ask
             let askChange = {
               type: 'ASK_UPDATE',
-              market: mkt,
-              rateString: this.exchangeName + mkt + delta[2],
+              market: market,
+              rateString: this.exchangeName + market + delta[2],
               rate: parseFloat(delta[2]),
               amount: parseFloat(delta[3])
             }

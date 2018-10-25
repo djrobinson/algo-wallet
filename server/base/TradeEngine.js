@@ -27,7 +27,7 @@ const x = {
 }
 
 // TODO: WILL EVENTUALLY BE INPUTS
-let runType = 'NONE'
+let runType = 'ON_INTERVAL'
 let intervalSize = 20000
 let newIntervalFlags = {}
 let desiredDepth = {
@@ -35,26 +35,43 @@ let desiredDepth = {
   BTC: 5
 }
 
+let pendingSetup = true
 let currentBalances = {}
 let pendingOrders = {}
 let pendingCancels = []
 let openOrders = {}
 let iterator = 0
 let marketInfo = {}
-let pairCount = {
-  ETH: 0,
-  BTC: 0
-}
+// let pairCount = {
+//   ETH: 0,
+//   BTC: 0
+// }
 
 const maxOrderDepth = 50
 
-let bittrex
+
+
 
 const start = async (markets, exchanges, tradeEngineCallback, orderActionCallback) => {
-  exchanges.forEach(exch => {
-    getBalances(exch)
+  const requiredCurrencies = []
+  for (var mkt in markets) {
+    if (requiredCurrencies.indexOf(mkt) === -1) {
+      requiredCurrencies.push(mkt)
+    }
+  }
+  const openBalances = await Promise.all(exchanges.map(exch => {
+    const balances = getBalances(exch)
+    currentBalances[exch] = balances
+    // Standardize balances
+    console.log("Here is balances: ", balances)
     openOrders[exch] = []
-  })
+    return balances
+  }))
+
+  console.log("When does the post await fire off?", openBalances)
+  // TODO: FIRE OFF COLLECTCOINS METHOD
+
+  // TODO:
 
   const bittrexArray = await x['bittrex'].fetchMarkets()
   const poloArray = await x['poloniex'].fetchMarkets()
@@ -66,40 +83,41 @@ const start = async (markets, exchanges, tradeEngineCallback, orderActionCallbac
   }, {})
   log.bright.blue(marketInfo)
 
-  bittrex = new Bittrex()
-  bittrex.initOrderDelta()
-  setTimeout(() => { bittrex.initOrderBook(markets[0]) }, 3000)
+  let ws = {}
+
+  const bittrex = new Bittrex()
+  bittrex.initExchange()
 
   const poloniex = new Poloniex()
-  poloniex.initOrderDelta()
+  poloniex.initExchange()
 
-  markets.forEach((market, i) => {
-    const base = market.slice(0, 3)
-    pairCount[base]++
-    setTimeout(() => {
-      poloniex.initOrderBook(market)
-    },3000 * (i + 1))
-  })
+  ws['bittrex'] = bittrex
+  ws['poloniex'] = poloniex
 
-  setTimeout(() => {
-    markets.forEach((market, i) => {
-      if (i) {
-        newIntervalFlags[market] = false
-        bittrex.initOrderBook(market)
-      }
-
+  emitter.on('EXCHANGE_READY', (exchange) => {
+    console.log(exchange, " is connected")
+    newIntervalFlags[exchange] = {}
+    markets.forEach((market) => {
+      newIntervalFlags[exchange] = {}
+      newIntervalFlags[exchange][market] = false
+      ws[exchange].initOrderBook(market)
     })
-  }, 6000)
+  })
 
   if (runType === 'ON_INTERVAL') {
     setInterval(() => {
-      markets.forEach(market => {
-        newIntervalFlags[market] = true
+      exchanges.forEach(exch => {
+        markets.forEach(market => {
+          newIntervalFlags[exch][market] = true
+        })
       })
     }, intervalSize)
   }
 
   emitter.on('ORDER_BOOK_INIT', initializeOrderBooks)
+  // Make this a workflow
+  // Scrape currencies
+
   emitter.on('MARKET_UPDATE', updatePriceAndRunStrategy)
 
   const onOrderDelta = event => {
@@ -109,6 +127,7 @@ const start = async (markets, exchanges, tradeEngineCallback, orderActionCallbac
   emitter.on('ORDER_DELTA', onOrderDelta)
 
   const boundCb = tradeEngineCallback.bind(this)
+  // UPDATER
   setInterval(() => {
     markets.forEach(market => {
       boundCb({
@@ -120,15 +139,13 @@ const start = async (markets, exchanges, tradeEngineCallback, orderActionCallbac
 }
 
 const stop = () => {
-  if (bittrex) {
-    bittrex.stopOrderBook()
-  }
+  console.log("STOP to be implemented")
 }
 
 const calculateAmount = (exchange, base, alt, side, rate) => {
   if (side === 'buy') {
     const fee = currentBalances[exchange][base].free * .0025
-    const altAmount = (currentBalances[exchange][base].free - fee) / rate / pairCount[base]
+    const altAmount = (currentBalances[exchange][base].free - fee) / rate / 2
     const minimum = marketInfo[base + '-' + alt].limits.amount.min
     if (minimum < altAmount) {
       return altAmount
@@ -152,7 +169,6 @@ const orderWorkflow = async (exchange, pair, side, rate) => {
   const amount = calculateAmount(exchange, base, alt, side, rate)
   if (amount) {
     if (openOrders[exchange].length) {
-      console.log("We've got an update!!")
       // Clone and erase openOrders
       // THIS SHOULDN'T BE ALL ORDERS
       const orders = openOrders[exchange].slice(0)
@@ -206,8 +222,8 @@ const runStrategy = async (event) => {
 const getBalances = async (exchange) => {
   try {
       // fetch account balance from the exchange, save to global variable
-      currentBalances[exchange] = await x[exchange].fetchBalance()
-      log.bright.yellow(currentBalances[exchange].free)
+      const currentBalances = await x[exchange].fetchBalance()
+      return currentBalances
   } catch (e) {
       if (e instanceof ccxt.DDoSProtection || e.message.includes ('ECONNRESET')) {
           log.bright.yellow ('[DDoS Protection] ' + e.message)
@@ -350,7 +366,7 @@ const updatePriceAndRunStrategy = (event) => {
       type = 'asks'
       book = masterBook[market].asks
     }
-    if (book) {
+    if (book && !pendingSetup) {
       let newBook, oldBook
       [newBook, oldBook] = maintainOrderBook(book, identifier, exchange, type, market, rate, amount)
       const newSummary = checkPriceAndVolume(type, market, newBook, oldBook)
@@ -363,10 +379,10 @@ const updatePriceAndRunStrategy = (event) => {
       if (runType === 'ON_MARKET_CHANGE') {
         recalculate = true
       }
-      if (runType === 'ON_INTERVAL' && newIntervalFlags[market]) {
+      if (runType === 'ON_INTERVAL' && newIntervalFlags[exchange][market]) {
         console.log("New interval!!")
         recalculate = true
-        newIntervalFlags[market] = false
+        newIntervalFlags[exchange][market] = false
       }
       masterBook[market].summary = newSummary
       masterBook[market][type] = newBook

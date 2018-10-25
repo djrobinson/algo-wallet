@@ -15,6 +15,10 @@ class Exchange {
     this.orderBookDepth = 50;
   }
 
+  emitExchangeReady(exch) {
+    emitter.emit('EXCHANGE_READY', exch)
+  }
+
   emitOrderBook(order) {
       order['exchange'] = this.exchangeName
       if (order.type === 'ORDER_BOOK_INIT') {

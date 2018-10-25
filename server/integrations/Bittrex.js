@@ -41,7 +41,7 @@ class Bittrex extends Exchange {
     }
   }
 
-  initOrderDelta() {
+  initExchange() {
 
     const orderClient = new signalR.client (
       'wss://beta.bittrex.com/signalr',
@@ -49,8 +49,11 @@ class Bittrex extends Exchange {
     );
     const boundSignature = this.createSignature.bind(this);
     const self = this;
+    const boundEmitExchangeReady = this.emitExchangeReady.bind(this)
+    const exchangeName = this.exchangeName
     orderClient.serviceHandlers.connected = function (connection) {
       console.log ('connected');
+      boundEmitExchangeReady(exchangeName)
 
       const apiKey = process.env.BITTREX_API_KEY
       orderClient.call ('c2', 'GetAuthContext', apiKey).done (function (err, challenge) {

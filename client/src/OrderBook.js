@@ -115,9 +115,9 @@ class OrderBook extends Component {
                       <Row key={i} className={this.props.bids[bid].exchange + overlapClass + openOrderClass + changeClass + newClass + openOrderClass + " order-row bid-row"}>
                         <div className="volume-bar-bid" style={{width: volumeBarStyle + '%'}}>
                         </div>
+                        <Col md={4}><span>{numeral(this.props.bids[bid].sum).format('0.00000000')}</span></Col>
                         <Col md={4}><span>{numeral(this.props.bids[bid].amount).format('0.00000000')}</span></Col>
                         <Col md={4}><span>{numeral(this.props.bids[bid].rate).format('0.00000000')}</span></Col>
-                        <Col md={4}><span>{numeral(this.props.bids[bid].sum).format('0.00000000')}</span></Col>
                       </Row>
                     );
                   } else {
