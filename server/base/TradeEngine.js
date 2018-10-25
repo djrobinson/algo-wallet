@@ -38,6 +38,7 @@ let desiredDepth = {
 let currentBalances = {}
 let pendingOrders = {}
 let pendingCancels = []
+let looseChange = []
 let openOrders = {}
 let iterator = 0
 let marketInfo = {}
@@ -49,13 +50,12 @@ let marketInfo = {}
 const maxOrderDepth = 50
 
 const start = async (markets, exchanges, tradeEngineCallback, orderActionCallback) => {
-  const requiredCurrencies = []
-  for (var mkt in markets) {
-    if (requiredCurrencies.indexOf(mkt) === -1) {
-      requiredCurrencies.push(mkt)
-    }
-  }
-  const looseChange = []
+  // const requiredCurrencies = []
+  // for (var mkt in markets) {
+  //   if (requiredCurrencies.indexOf(mkt) === -1) {
+  //     requiredCurrencies.push(mkt)
+  //   }
+  // }
   const openBalances = await Promise.all(exchanges.map(async (exch) => {
     const balances = await getBalances(exch)
     currentBalances[exch] = balances
@@ -81,9 +81,6 @@ const start = async (markets, exchanges, tradeEngineCallback, orderActionCallbac
   })
 
   console.log("What is loose change: ", looseChange)
-  // TODO: FIRE OFF COLLECTCOINS METHOD
-  const coinCollected = await collectCoins(looseChange)
-  // TODO:
 
   const bittrexArray = await x['bittrex'].fetchMarkets()
   const poloArray = await x['poloniex'].fetchMarkets()
@@ -126,11 +123,10 @@ const start = async (markets, exchanges, tradeEngineCallback, orderActionCallbac
     }, intervalSize)
   }
 
-  emitter.on('ORDER_BOOK_READY', (exchange) => {
-
+  emitter.on('ORDER_BOOK_INIT', (event) => {
+    initializeOrderBooks(event)
+    collectCoins(event.exchange)
   })
-
-  emitter.on('ORDER_BOOK_INIT', initializeOrderBooks)
 
   emitter.on('MARKET_UPDATE', updatePriceAndRunStrategy)
 
@@ -138,6 +134,7 @@ const start = async (markets, exchanges, tradeEngineCallback, orderActionCallbac
     handleOrderDelta(event)
     orderActionCallback(event)
   }
+
   emitter.on('ORDER_DELTA', onOrderDelta)
 
   const boundCb = tradeEngineCallback.bind(this)
@@ -156,9 +153,10 @@ const stop = () => {
   console.log("STOP to be implemented")
 }
 
-const collectCoins = async (looseChange, exchange) => {
+const collectCoins = async (exchange) => {
   const base = 'BTC'
-  for (var coin in looseChange) {
+  const changeResults = looseChange.map(async (coin) => {
+    console.log("masterbook: ", looseChange)
     const bids = masterBook[base + '-' + coin.coin].bids
     if (coin.exchange === exchange) {
       const highestBid = Object.keys(bids)[0]
@@ -167,10 +165,12 @@ const collectCoins = async (looseChange, exchange) => {
                                               'limit',
                                               'sell',
                                               coin.amount,
-                                              bids[highestBid]rate)
+                                              bids[highestBid].rate)
+      console.log("Loose change results ", orderResults)
+      return orderResults
     }
-    return true
-  }
+
+  })
 
 }
 
