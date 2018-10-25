@@ -24,6 +24,7 @@ class Exchange {
       if (order.type === 'ORDER_BOOK_INIT') {
         emitter.emit(order.type, order)
       } else if (order.type === 'WS_ERROR') {
+        console.log("Websocket error in emit order book")
         emitter.emit(order.type, order)
       } else {
         emitter.emit('MARKET_UPDATE', order)

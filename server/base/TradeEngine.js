@@ -35,7 +35,6 @@ let desiredDepth = {
   BTC: 5
 }
 
-let pendingSetup = true
 let currentBalances = {}
 let pendingOrders = {}
 let pendingCancels = []
@@ -49,9 +48,6 @@ let marketInfo = {}
 
 const maxOrderDepth = 50
 
-
-
-
 const start = async (markets, exchanges, tradeEngineCallback, orderActionCallback) => {
   const requiredCurrencies = []
   for (var mkt in markets) {
@@ -59,18 +55,34 @@ const start = async (markets, exchanges, tradeEngineCallback, orderActionCallbac
       requiredCurrencies.push(mkt)
     }
   }
-  const openBalances = await Promise.all(exchanges.map(exch => {
-    const balances = getBalances(exch)
+  const looseChange = []
+  const openBalances = await Promise.all(exchanges.map(async (exch) => {
+    const balances = await getBalances(exch)
     currentBalances[exch] = balances
     // Standardize balances
-    console.log("Here is balances: ", balances)
     openOrders[exch] = []
-    return balances
+    return {
+      exch,
+      balances
+    }
   }))
 
-  console.log("When does the post await fire off?", openBalances)
-  // TODO: FIRE OFF COLLECTCOINS METHOD
+  openBalances.forEach(bals => {
+    console.log('What bals: ', bals)
+    Object.keys(bals.balances).forEach(bal => {
+      if ( bals.balances[bal].free > 0 ) {
+        looseChange.push({
+          exchange: bals.exch,
+          coin: bal,
+          amount: bals.balances[bal].free
+        })
+      }
+    })
+  })
 
+  console.log("What is loose change: ", looseChange)
+  // TODO: FIRE OFF COLLECTCOINS METHOD
+  const coinCollected = await collectCoins(looseChange)
   // TODO:
 
   const bittrexArray = await x['bittrex'].fetchMarkets()
@@ -114,9 +126,11 @@ const start = async (markets, exchanges, tradeEngineCallback, orderActionCallbac
     }, intervalSize)
   }
 
+  emitter.on('ORDER_BOOK_READY', (exchange) => {
+
+  })
+
   emitter.on('ORDER_BOOK_INIT', initializeOrderBooks)
-  // Make this a workflow
-  // Scrape currencies
 
   emitter.on('MARKET_UPDATE', updatePriceAndRunStrategy)
 
@@ -140,6 +154,24 @@ const start = async (markets, exchanges, tradeEngineCallback, orderActionCallbac
 
 const stop = () => {
   console.log("STOP to be implemented")
+}
+
+const collectCoins = async (looseChange, exchange) => {
+  const base = 'BTC'
+  for (var coin in looseChange) {
+    const bids = masterBook[base + '-' + coin.coin].bids
+    if (coin.exchange === exchange) {
+      const highestBid = Object.keys(bids)[0]
+      const orderResults = await createOrder(exchange,
+                                              coin.coin + '/' + base,
+                                              'limit',
+                                              'sell',
+                                              coin.amount,
+                                              bids[highestBid]rate)
+    }
+    return true
+  }
+
 }
 
 const calculateAmount = (exchange, base, alt, side, rate) => {
@@ -366,7 +398,7 @@ const updatePriceAndRunStrategy = (event) => {
       type = 'asks'
       book = masterBook[market].asks
     }
-    if (book && !pendingSetup) {
+    if (book) {
       let newBook, oldBook
       [newBook, oldBook] = maintainOrderBook(book, identifier, exchange, type, market, rate, amount)
       const newSummary = checkPriceAndVolume(type, market, newBook, oldBook)
