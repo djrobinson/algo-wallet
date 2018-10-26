@@ -11,7 +11,10 @@
     "test": "mocha server --recursive",
     "dev": "npm run clean && npm run compile && PORT=3001 node bin/www",
     "start": "node bin/www",
-    "heroku-postbuild": "cd client && npm install && npm run build"
+    "heroku-postbuild": "cd client && npm install && npm run build",
+    "start-ts": "npm run build:live",
+    "build": "tsc -p .",
+    "build:live": "nodemon --watch 'src/**/*.ts' --exec 'ts-node' src/index.ts"
   },
   "dependencies": {
     "autobahn": "^18.3.2",
@@ -42,5 +45,11 @@
     "request": "^2.65.0",
     "signalr-client": "0.0.17",
     "socket.io": "^2.1.1"
+  },
+  "devDependencies": {
+    "@types/node": "^10.12.0",
+    "nodemon": "^1.18.4",
+    "ts-node": "^7.0.1",
+    "typescript": "^3.1.3"
   }
 }

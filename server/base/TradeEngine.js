@@ -26,6 +26,12 @@ const x = {
   })
 }
 
+// Trade Execution
+// Fund Management
+// Startup & Shutdown
+// Manage Orderbook
+// Manage Indicators
+
 // TODO: WILL EVENTUALLY BE INPUTS
 let runType = 'ON_INTERVAL'
 let intervalSize = 20000
@@ -36,6 +42,7 @@ let desiredDepth = {
 }
 
 let currentBalances = {}
+
 let pendingOrders = {}
 let pendingCancels = []
 let looseChange = []
@@ -56,6 +63,8 @@ const start = async (markets, exchanges, tradeEngineCallback, orderActionCallbac
   //     requiredCurrencies.push(mkt)
   //   }
   // }
+
+  // Step 1: Fund Management
   const openBalances = await Promise.all(exchanges.map(async (exch) => {
     const balances = await getBalances(exch)
     currentBalances[exch] = balances
@@ -82,6 +91,7 @@ const start = async (markets, exchanges, tradeEngineCallback, orderActionCallbac
 
   console.log("What is loose change: ", looseChange)
 
+  // Step 2: Order Sizing
   const bittrexArray = await x['bittrex'].fetchMarkets()
   const poloArray = await x['poloniex'].fetchMarkets()
 
