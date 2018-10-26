@@ -23,6 +23,7 @@ const cancelOrder = async (order) => {
         const cancelIndex = pendingCancels.indexOf(id)
         pendingCancels.splice(cancelIndex, 1)
       }
+
     } catch (e) {
       log.bright.magenta ('Cancel Failed', e, order)
     }
