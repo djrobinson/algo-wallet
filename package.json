@@ -14,7 +14,7 @@
     "heroku-postbuild": "cd client && npm install && npm run build",
     "start-ts": "npm run build:live",
     "build": "tsc -p .",
-    "build:live": "nodemon --watch 'src/**/*.ts' --exec 'ts-node' src/index.ts"
+    "build:live": "nodemon --watch 'trade-engine/*.ts' --exec 'ts-node'"
   },
   "dependencies": {
     "autobahn": "^18.3.2",
