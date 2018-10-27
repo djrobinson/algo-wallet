@@ -48,7 +48,6 @@ class Exchange {
     }
     return response;
   }
-
 }
 
 module.exports = { Exchange, emitter };
