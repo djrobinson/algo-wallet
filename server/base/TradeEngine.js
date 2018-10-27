@@ -329,7 +329,6 @@ const handleOrderDelta = (delta) => {
   }
 }
 
-// Stealing from exchang agg
 const initializeOrderBooks = (event) => {
   console.log("Initting order books: ", event.exchange, event.market)
   const market = event.market
