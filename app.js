@@ -44,7 +44,7 @@ io.on('connection', client => {
 
   client.on('startEngine', req => {
     console.log("What is the req from start engine: ", req)
-    const markets = ['BTC-ETH', 'BTC-LTC', 'BTC-XMR']
+    const markets = ['BTC-ETH', 'BTC-LTC', 'BTC-XMR', 'BTC-DGB']
     const exchanges = ['bittrex', 'poloniex']
     start(markets, exchanges, tradeEngineCallback, orderActionCallback)
   })

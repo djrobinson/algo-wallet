@@ -9,22 +9,22 @@ const log = require ('ololog').configure ({ locate: false })
 
 let masterBook = {}
 
-const x = {
-  bittrex: new ccxt.bittrex ({
-    'apiKey': process.env.BITTREX_API_KEY,
-    'secret': process.env.BITTREX_SECRET,
-    'verbose': false, // set to true to see more debugging output
-    'timeout': 60000,
-    'enableRateLimit': true, // add this
-  }),
-  poloniex: new ccxt.poloniex ({
-    'apiKey': process.env.POLONIEX_API_KEY,
-    'secret': process.env.POLONIEX_SECRET,
-    'verbose': false, // set to true to see more debugging output
-    'timeout': 60000,
-    'enableRateLimit': true, // add this
-  })
-}
+// const x = {
+//   bittrex: new ccxt.bittrex ({
+//     'apiKey': process.env.BITTREX_API_KEY,
+//     'secret': process.env.BITTREX_SECRET,
+//     'verbose': false, // set to true to see more debugging output
+//     'timeout': 60000,
+//     'enableRateLimit': true, // add this
+//   }),
+//   poloniex: new ccxt.poloniex ({
+//     'apiKey': process.env.POLONIEX_API_KEY,
+//     'secret': process.env.POLONIEX_SECRET,
+//     'verbose': false, // set to true to see more debugging output
+//     'timeout': 60000,
+//     'enableRateLimit': true, // add this
+//   })
+// }
 
 // Trade Execution
 // Fund Management
@@ -33,7 +33,7 @@ const x = {
 // Manage Indicators
 
 // TODO: WILL EVENTUALLY BE INPUTS
-let runType = 'ON_INTERVAL'
+let runType = 'NONE'
 let intervalSize = 20000
 let newIntervalFlags = {}
 let desiredDepth = {
@@ -65,42 +65,42 @@ const start = async (markets, exchanges, tradeEngineCallback, orderActionCallbac
   // }
 
   // Step 1: Fund Management
-  const openBalances = await Promise.all(exchanges.map(async (exch) => {
-    const balances = await getBalances(exch)
-    currentBalances[exch] = balances
-    // Standardize balances
-    openOrders[exch] = []
-    return {
-      exch,
-      balances
-    }
-  }))
+  // const openBalances = await Promise.all(exchanges.map(async (exch) => {
+  //   const balances = await getBalances(exch)
+  //   currentBalances[exch] = balances
+  //   // Standardize balances
+  //   openOrders[exch] = []
+  //   return {
+  //     exch,
+  //     balances
+  //   }
+  // }))
 
-  openBalances.forEach(bals => {
-    console.log('What bals: ', bals)
-    Object.keys(bals.balances).forEach(bal => {
-      if ( bals.balances[bal].free > 0 ) {
-        looseChange.push({
-          exchange: bals.exch,
-          coin: bal,
-          amount: bals.balances[bal].free
-        })
-      }
-    })
-  })
+  // openBalances.forEach(bals => {
+  //   console.log('What bals: ', bals)
+  //   Object.keys(bals.balances).forEach(bal => {
+  //     if ( bals.balances[bal].free > 0 ) {
+  //       looseChange.push({
+  //         exchange: bals.exch,
+  //         coin: bal,
+  //         amount: bals.balances[bal].free
+  //       })
+  //     }
+  //   })
+  // })
 
-  console.log("What is loose change: ", looseChange)
+  // console.log("What is loose change: ", looseChange)
 
   // Step 2: Order Sizing
-  const bittrexArray = await x['bittrex'].fetchMarkets()
-  const poloArray = await x['poloniex'].fetchMarkets()
+  // const bittrexArray = await x['bittrex'].fetchMarkets()
+  // const poloArray = await x['poloniex'].fetchMarkets()
 
-  const marketArray = bittrexArray.concat(poloArray)
-  marketInfo = marketArray.reduce((acc, market) => {
-    acc[market.id] = market
-    return acc
-  }, {})
-  log.bright.blue(marketInfo)
+  // const marketArray = bittrexArray.concat(poloArray)
+  // marketInfo = marketArray.reduce((acc, market) => {
+  //   acc[market.id] = market
+  //   return acc
+  // }, {})
+  // log.bright.blue(marketInfo)
 
   let ws = {}
 
@@ -135,7 +135,7 @@ const start = async (markets, exchanges, tradeEngineCallback, orderActionCallbac
 
   emitter.on('ORDER_BOOK_INIT', (event) => {
     initializeOrderBooks(event)
-    collectCoins(event.exchange)
+    // collectCoins(event.exchange)
   })
 
   emitter.on('MARKET_UPDATE', updatePriceAndRunStrategy)
@@ -163,161 +163,159 @@ const stop = () => {
   console.log("STOP to be implemented")
 }
 
-const collectCoins = async (exchange) => {
-  const base = 'BTC'
-  const changeResults = looseChange.map(async (coin) => {
-    console.log("masterbook: ", looseChange)
-    const bids = masterBook[base + '-' + coin.coin].bids
-    if (coin.exchange === exchange) {
-      const highestBid = Object.keys(bids)[0]
-      const orderResults = await createOrder(exchange,
-                                              coin.coin + '/' + base,
-                                              'limit',
-                                              'sell',
-                                              coin.amount,
-                                              bids[highestBid].rate)
-      console.log("Loose change results ", orderResults)
-      return orderResults
-    }
+// const collectCoins = async (exchange) => {
+//   const base = 'BTC'
+//   const changeResults = looseChange.map(async (coin) => {
+//     console.log("masterbook: ", looseChange)
+//     const bids = masterBook[base + '-' + coin.coin].bids
+//     if (coin.exchange === exchange) {
+//       const highestBid = Object.keys(bids)[0]
+//       const orderResults = await createOrder(exchange,
+//                                               coin.coin + '/' + base,
+//                                               'limit',
+//                                               'sell',
+//                                               coin.amount,
+//                                               bids[highestBid].rate)
+//       console.log("Loose change results ", orderResults)
+//       return orderResults
+//     }
+//   })
+// }
 
-  })
+// const calculateAmount = (exchange, base, alt, side, rate) => {
+//   if (side === 'buy') {
+//     const fee = currentBalances[exchange][base].free * .0025
+//     const altAmount = (currentBalances[exchange][base].free - fee) / rate / 2
+//     const minimum = marketInfo[base + '-' + alt].limits.amount.min
+//     if (minimum < altAmount) {
+//       return altAmount
+//     }
+//     return null
+//   }
+//   if (side === 'sell') {
+//     const fee = currentBalances[exchange][alt].free * .0025
+//     const baseAmount = (currentBalances[exchange][alt].free - fee)
+//     const minimum = marketInfo[base + '-' + alt].limits.amount.min
+//     if (minimum < baseAmount) {
+//       return baseAmount
+//     }
+//     return null
+//   }
+// }
 
-}
+// const orderWorkflow = async (exchange, pair, side, rate) => {
+//   const base = pair.slice(0, pair.indexOf('-'))
+//   const alt = pair.slice(pair.length - pair.indexOf('-'), pair.length)
+//   const amount = calculateAmount(exchange, base, alt, side, rate)
+//   if (amount) {
+//     if (openOrders[exchange].length) {
+//       // Clone and erase openOrders
+//       // THIS SHOULDN'T BE ALL ORDERS
+//       const orders = openOrders[exchange].slice(0)
+//       for (const order of orders) {
+//         const cancelResponse = await cancelOrder(order)
+//         log.bright.red( "Cancel results: ", cancelResponse )
+//       }
+//     }
+//     const asset = side === 'buy' ? base : alt
+//     if (!pendingOrders[asset]) {
+//       pendingOrders[asset] = true
+//       let orderResults
+//       try {
+//         orderResults = await createOrder(exchange, alt + '/' + base, 'limit', side, amount, rate)
+//       } catch (e) {
+//         log.bright.red("Error while creating order ", e)
+//         orderResults = e
+//       } finally {
+//         pendingOrders[asset] = false
+//         return orderResults
+//       }
 
-const calculateAmount = (exchange, base, alt, side, rate) => {
-  if (side === 'buy') {
-    const fee = currentBalances[exchange][base].free * .0025
-    const altAmount = (currentBalances[exchange][base].free - fee) / rate / 2
-    const minimum = marketInfo[base + '-' + alt].limits.amount.min
-    if (minimum < altAmount) {
-      return altAmount
-    }
-    return null
-  }
-  if (side === 'sell') {
-    const fee = currentBalances[exchange][alt].free * .0025
-    const baseAmount = (currentBalances[exchange][alt].free - fee)
-    const minimum = marketInfo[base + '-' + alt].limits.amount.min
-    if (minimum < baseAmount) {
-      return baseAmount
-    }
-    return null
-  }
-}
+//     } else {
+//       return 'Order pending'
+//     }
+//   } else {
+//     return 'Insufficient funds'
+//   }
+// }
 
-const orderWorkflow = async (exchange, pair, side, rate) => {
-  const base = pair.slice(0, pair.indexOf('-'))
-  const alt = pair.slice(pair.length - pair.indexOf('-'), pair.length)
-  const amount = calculateAmount(exchange, base, alt, side, rate)
-  if (amount) {
-    if (openOrders[exchange].length) {
-      // Clone and erase openOrders
-      // THIS SHOULDN'T BE ALL ORDERS
-      const orders = openOrders[exchange].slice(0)
-      for (const order of orders) {
-        const cancelResponse = await cancelOrder(order)
-        log.bright.red( "Cancel results: ", cancelResponse )
-      }
-    }
-    const asset = side === 'buy' ? base : alt
-    if (!pendingOrders[asset]) {
-      pendingOrders[asset] = true
-      let orderResults
-      try {
-        orderResults = await createOrder(exchange, alt + '/' + base, 'limit', side, amount, rate)
-      } catch (e) {
-        log.bright.red("Error while creating order ", e)
-        orderResults = e
-      } finally {
-        pendingOrders[asset] = false
-        return orderResults
-      }
+// const runStrategy = async (event) => {
+//   console.log("Running strategy", event)
+//   const pair = event.market
+//   const side = 'sell'
+//   const exchange = event.exchange
+//   if (masterBook[pair].summary.bidDesiredDepth) {
+//     console.log("Executing buy")
+//     const buyRate = masterBook[pair].summary.bidDesiredDepth
+//     const buyResult = await orderWorkflow(exchange, pair, 'buy', buyRate)
+//     log.bright.green( "Buy order result: ", buyResult, event.exchange )
+//   }
+//   if (masterBook[pair].summary.askDesiredDepth) {
+//     console.log("Executing sell")
+//     const sellRate = masterBook[pair].summary.askDesiredDepth
+//     const sellResult = await orderWorkflow(exchange, pair, 'sell', sellRate)
+//     log.bright.red( "Sell order result: ", sellResult, event.exchange )
+//   }
+//   iterator++
+// }
 
-    } else {
-      return 'Order pending'
-    }
-  } else {
-    return 'Insufficient funds'
-  }
-}
+// const getBalances = async (exchange) => {
+//   try {
+//       // fetch account balance from the exchange, save to global variable
+//       const currentBalances = await x[exchange].fetchBalance()
+//       return currentBalances
+//   } catch (e) {
+//       if (e instanceof ccxt.DDoSProtection || e.message.includes ('ECONNRESET')) {
+//           log.bright.yellow ('[DDoS Protection] ' + e.message)
+//       } else if (e instanceof ccxt.RequestTimeout) {
+//           log.bright.yellow ('[Request Timeout] ' + e.message)
+//       } else if (e instanceof ccxt.AuthenticationError) {
+//           log.bright.yellow ('[Authentication Error] ' + e.message)
+//       } else if (e instanceof ccxt.ExchangeNotAvailable) {
+//           log.bright.yellow ('[Exchange Not Available Error] ' + e.message)
+//       } else if (e instanceof ccxt.ExchangeError) {
+//           log.bright.yellow ('[Exchange Error] ' + e.message)
+//       } else if (e instanceof ccxt.NetworkError) {
+//           log.bright.yellow ('[Network Error] ' + e.message)
+//       } else {
+//           throw e
+//       }
+//   }
+// }
 
-const runStrategy = async (event) => {
-  console.log("Running strategy", event)
-  const pair = event.market
-  const side = 'sell'
-  const exchange = event.exchange
-  if (masterBook[pair].summary.bidDesiredDepth) {
-    console.log("Executing buy")
-    const buyRate = masterBook[pair].summary.bidDesiredDepth
-    const buyResult = await orderWorkflow(exchange, pair, 'buy', buyRate)
-    log.bright.green( "Buy order result: ", buyResult, event.exchange )
-  }
-  if (masterBook[pair].summary.askDesiredDepth) {
-    console.log("Executing sell")
-    const sellRate = masterBook[pair].summary.askDesiredDepth
-    const sellResult = await orderWorkflow(exchange, pair, 'sell', sellRate)
-    log.bright.red( "Sell order result: ", sellResult, event.exchange )
-  }
-  iterator++
-}
+// const createOrder = async (exchange, symbol, orderType, side, amount, price) => {
+//   try {
+//     log.bright.yellow("Order: ", symbol, side, price, amount)
+//     const response = await x[exchange].createOrder (symbol, orderType, side, amount, price)
+//     log.bright.magenta ('Create Order Succeeded: ', exchange, symbol, side, amount)
+//     return response
+//   } catch (e) {
+//     log.bright.magenta (symbol, side, x[exchange].iso8601 (Date.now ()), e.constructor.name, e.message)
+//     log.bright.magenta ('Failed')
+//   }
+// }
 
-const getBalances = async (exchange) => {
-  try {
-      // fetch account balance from the exchange, save to global variable
-      const currentBalances = await x[exchange].fetchBalance()
-      return currentBalances
-  } catch (e) {
-      if (e instanceof ccxt.DDoSProtection || e.message.includes ('ECONNRESET')) {
-          log.bright.yellow ('[DDoS Protection] ' + e.message)
-      } else if (e instanceof ccxt.RequestTimeout) {
-          log.bright.yellow ('[Request Timeout] ' + e.message)
-      } else if (e instanceof ccxt.AuthenticationError) {
-          log.bright.yellow ('[Authentication Error] ' + e.message)
-      } else if (e instanceof ccxt.ExchangeNotAvailable) {
-          log.bright.yellow ('[Exchange Not Available Error] ' + e.message)
-      } else if (e instanceof ccxt.ExchangeError) {
-          log.bright.yellow ('[Exchange Error] ' + e.message)
-      } else if (e instanceof ccxt.NetworkError) {
-          log.bright.yellow ('[Network Error] ' + e.message)
-      } else {
-          throw e
-      }
-  }
-}
+// const cancelOrder = async (order) => {
+//   const exchange = order.exchange
+//   const id = order.id
+//   if (pendingCancels.indexOf(id) === -1) {
+//     console.log("What is ID for cancel ", id)
+//     pendingCancels.push(id)
+//     try {
+//       const response = await x[exchange].cancelOrder(id)
+//       log.bright.magenta (response)
+//       if (response) {
+//         const cancelIndex = pendingCancels.indexOf(id)
+//         pendingCancels.splice(cancelIndex, 1)
+//       }
 
-const createOrder = async (exchange, symbol, orderType, side, amount, price) => {
-  try {
-    log.bright.yellow("Order: ", symbol, side, price, amount)
-    const response = await x[exchange].createOrder (symbol, orderType, side, amount, price)
-    log.bright.magenta ('Create Order Succeeded: ', exchange, symbol, side, amount)
-    return response
-  } catch (e) {
-    log.bright.magenta (symbol, side, x[exchange].iso8601 (Date.now ()), e.constructor.name, e.message)
-    log.bright.magenta ('Failed')
-  }
-}
-
-const cancelOrder = async (order) => {
-  const exchange = order.exchange
-  const id = order.id
-  if (pendingCancels.indexOf(id) === -1) {
-    console.log("What is ID for cancel ", id)
-    pendingCancels.push(id)
-    try {
-      const response = await x[exchange].cancelOrder(id)
-      log.bright.magenta (response)
-      if (response) {
-        const cancelIndex = pendingCancels.indexOf(id)
-        pendingCancels.splice(cancelIndex, 1)
-      }
-
-    } catch (e) {
-      log.bright.magenta ('Cancel Failed', e, order)
-    }
-  } else {
-    console.log("Dupe cancel prevented")
-  }
-}
+//     } catch (e) {
+//       log.bright.magenta ('Cancel Failed', e, order)
+//     }
+//   } else {
+//     console.log("Dupe cancel prevented")
+//   }
+// }
 
 const handleOrderDelta = (delta) => {
   if (delta.type === 'OPEN') {
@@ -428,9 +426,9 @@ const updatePriceAndRunStrategy = (event) => {
       masterBook[market].summary = newSummary
       masterBook[market][type] = newBook
 
-      if (recalculate) {
-        runStrategy(event)
-      }
+      // if (recalculate) {
+      //   runStrategy(event)
+      // }
     }
   }
 }

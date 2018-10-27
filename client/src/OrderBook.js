@@ -12,15 +12,11 @@ class OrderBook extends Component {
 
   scrollToBottom = () => {
     console.log("scroll bottom")
-    this.orderScroll.scrollTop = this.bidAskSpread.offsetTop - 600;
+    this.orderScroll.scrollTop = this.bidAskSpread.offsetTop - 400;
   }
 
   componentDidMount() {
-
-  }
-
-  componentDidUpdate() {
-    // this.scrollToBottom();
+    this.scrollToBottom()
   }
 
   render() {
@@ -66,9 +62,8 @@ class OrderBook extends Component {
                       <Row key={i} className={this.props.asks[ask].exchange + overlapClass + openOrderClass + changeClass + newClass +" order-row ask-row"}>
                         <div className="volume-bar-ask" style={{width: volumeBarStyle + '%'}}>
                         </div>
-                        <Col md={4}><span>{numeral(this.props.asks[ask].rate).format('0.00000000')}</span></Col>
-                        <Col md={4}><span>{numeral(this.props.asks[ask].amount).format('0.00000000')}</span></Col>
-                        <Col md={4}><span>{numeral(this.props.asks[ask].sum).format('0.00000000')}</span></Col>
+                        <Col md={4}><span>{numeral(this.props.asks[ask].rate).format('0.0000000')}</span></Col>
+                        <Col md={4}><span>{numeral(this.props.asks[ask].amount).format('0.00000')}</span></Col>
                       </Row>
                     );
                   } else {
@@ -87,6 +82,7 @@ class OrderBook extends Component {
             className="bid-ask-spread"
             style={{ clear: "both" }}
             ref={(el) => { this.bidAskSpread = el; }}>
+            <h2>{this.props.market}</h2>
           </div>
 
           <div className="bid-book">
@@ -115,9 +111,8 @@ class OrderBook extends Component {
                       <Row key={i} className={this.props.bids[bid].exchange + overlapClass + openOrderClass + changeClass + newClass + openOrderClass + " order-row bid-row"}>
                         <div className="volume-bar-bid" style={{width: volumeBarStyle + '%'}}>
                         </div>
-                        <Col md={4}><span>{numeral(this.props.bids[bid].sum).format('0.00000000')}</span></Col>
-                        <Col md={4}><span>{numeral(this.props.bids[bid].amount).format('0.00000000')}</span></Col>
-                        <Col md={4}><span>{numeral(this.props.bids[bid].rate).format('0.00000000')}</span></Col>
+                        <Col md={4}><span>{numeral(this.props.bids[bid].amount).format('0.00000')}</span></Col>
+                        <Col md={4}><span>{numeral(this.props.bids[bid].rate).format('0.000000')}</span></Col>
                       </Row>
                     );
                   } else {

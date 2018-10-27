@@ -12,3 +12,6 @@ cd /client
 npm i
 npm start
 ```
+Click "Start the Trades!" at the top of the page.
+Order will begin to appear as sockets connect
+Scroll down each orderbook to see bids

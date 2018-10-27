@@ -52,14 +52,12 @@ class TradeEngine extends Component {
         message.prevAsks = this.state[message.market].asks
       }
       this.setState({ [message.market]: message})
-
-      console.log("Getting order book init: ", this.state[message.market])
       if (this.state.markets.indexOf(message.market) === -1) {
         this.setState({markets: [...this.state.markets, message.market]})
       }
     });
     this.socket.on('ORDER_ACTION', message => {
-      console.log("Order actions", message)
+
       if (this.state[message.market]) {
         let openOrders = {...this.state.openOrders}
         if (openOrders[message.market] && openOrders[message.market].length) {
@@ -82,7 +80,6 @@ class TradeEngine extends Component {
           this.setState({ openOrders })
         }
       }
-      console.log("Handling order actions: ", this.state.openOrders)
       this.setState({orders: [...this.state.orders, message]})
     })
   }
@@ -97,10 +94,9 @@ class TradeEngine extends Component {
   render() {
     let isOverlap;
     return (
-      <div className="order-book">
+      <div>
         <Row>
           <Button onClick={this.startSocket}>Start The Trades!</Button>
-          <Button onClick={this.stopSocket}>Stop The Trades</Button>
         </Row>
 
 
