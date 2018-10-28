@@ -42,10 +42,11 @@
     "mongoose": "^5.3.4",
     "morgan": "~1.9.0",
     "ololog": "^1.1.112",
-    "request": "^2.65.0",
     "react-redux": "^5.0.7",
     "redux": "^3.5.2",
+    "redux-saga": "^0.16.2",
     "redux-thunk": "^2.1.0",
+    "request": "^2.65.0",
     "signalr-client": "0.0.17",
     "socket.io": "^2.1.1"
   },
