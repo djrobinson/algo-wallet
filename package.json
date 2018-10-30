@@ -48,7 +48,8 @@
     "redux-thunk": "^2.1.0",
     "request": "^2.65.0",
     "signalr-client": "0.0.17",
-    "socket.io": "^2.1.1"
+    "socket.io": "^2.1.1",
+    "uuid": "^3.3.2"
   },
   "devDependencies": {
     "@types/node": "^10.12.0",
