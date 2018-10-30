@@ -1,14 +1,10 @@
-/*
-INHERITS FROM EXCHANGE, IMPLEMENTS EXCHANGE SPECIFIC CALLBACKS. PULLS IN CREDS
-AND CONTIANS EXCHANGE SPECIFIC FORMATTERS
-*/
 const signalR = require ('signalr-client');
 const jsonic = require('jsonic');
 const zlib = require('zlib');
-const { Exchange } = require('../base/Exchange');
+const { ExchangeEmitter } = require('../ExchangeEmitter');
 const CryptoJS = require('crypto-js');
 
-class Bittrex extends Exchange {
+class Bittrex extends ExchangeEmitter {
   constructor() {
     super();
     this.exchangeName = 'bittrex';

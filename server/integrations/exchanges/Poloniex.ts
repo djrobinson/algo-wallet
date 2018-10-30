@@ -1,13 +1,9 @@
-/*
-INHERITS FROM EXCHANGE, IMPLEMENTS EXCHANGE SPECIFIC CALLBACKS. PULLS IN CREDS
-AND CONTIANS EXCHANGE SPECIFIC FORMATTERS
-*/
 const Moment = require('moment');
 const WebSocket = require('ws');
-const { Exchange } = require('../base/Exchange');
+const { ExchangeEmitter } = require('../ExchangeEmitter');
 const CryptoJS = require('crypto-js');
 
-class Poloniex extends Exchange {
+class Poloniex extends ExchangeEmitter {
 
   constructor() {
     super();

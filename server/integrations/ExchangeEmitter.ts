@@ -1,18 +1,15 @@
-/*
-TODO: CREATE A CLASS THAT HAS THE REST/WS COMMON FUNCTIONS, COMMON
-PROPERTIES, AND OVERRIDABLE GETMETHODS FOR MARKETS & ORDERBOOK
-*/
-
 require('babel-polyfill');
 require('es6-promise').polyfill();
 require('isomorphic-fetch');
 const events = require('events');
 const emitter = new events.EventEmitter;
 
-class Exchange {
+class ExchangeEmitter {
 
-  constructor() {
-    this.orderBookDepth = 50;
+  exchangeName:string = ''
+
+  constructor(exchangeName) {
+    this.exchangeName = exchangeName
   }
 
   emitExchangeReady(exch) {

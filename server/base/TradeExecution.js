@@ -1,3 +1,4 @@
+
 const createOrder = async (exchange, symbol, orderType, side, amount, price) => {
   try {
     log.bright.yellow("Order: ", symbol, side, price, amount)
