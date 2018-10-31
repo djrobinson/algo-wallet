@@ -5,9 +5,10 @@ const { ExchangeEmitter } = require('../ExchangeEmitter');
 const CryptoJS = require('crypto-js');
 
 class Bittrex extends ExchangeEmitter {
+  client:any = {}
+  marketsUrl:string
   constructor() {
-    super();
-    this.exchangeName = 'bittrex';
+    super('bittrex')
     this.marketsUrl = 'https://bittrex.com/api/v1.1/public/getmarkets';
   }
 
@@ -21,8 +22,8 @@ class Bittrex extends ExchangeEmitter {
     }
   }
 
-  parseMarkets(raw) {
-    return raw.map(mkt => {
+  parseMarkets(raw:any) {
+    return raw.map((mkt:any) => {
       return {
         market: mkt.MarketName,
         logo: mkt.LogoUrl
@@ -47,12 +48,12 @@ class Bittrex extends ExchangeEmitter {
     const self = this;
     const boundEmitExchangeReady = this.emitExchangeReady.bind(this)
     const exchangeName = this.exchangeName
-    orderClient.serviceHandlers.connected = function (connection) {
+    orderClient.serviceHandlers.connected = (connection:any) => {
       console.log ('connected');
       boundEmitExchangeReady(exchangeName)
 
       const apiKey = process.env.BITTREX_API_KEY
-      orderClient.call ('c2', 'GetAuthContext', apiKey).done (function (err, challenge) {
+      orderClient.call ('c2', 'GetAuthContext', apiKey).done ((err:any, challenge:any) => {
         if (err) { console.log("GetAuthContext error: ", err); }
         if (challenge) {
           const apiSecret = process.env.BITTREX_SECRET
@@ -96,7 +97,7 @@ class Bittrex extends ExchangeEmitter {
         let b64 = data.R;
 
         let raw = new Buffer.from(b64.toString(), 'base64');
-        zlib.inflateRaw (raw, function (err, inflated) {
+        zlib.inflateRaw (raw, (err:any, inflated:any) => {
           if (! err) {
             let json = JSON.parse (inflated.toString ('utf8'));
             boundParser('ORDER_BOOK_INIT', json, json.M)
@@ -109,7 +110,7 @@ class Bittrex extends ExchangeEmitter {
         let b64 = data.M[0].A[0];
 
         let raw = new Buffer.from(b64, 'base64');
-        zlib.inflateRaw (raw, function (err, inflated) {
+        zlib.inflateRaw (raw, (err:any, inflated:any) => {
           if (! err) {
             let json = JSON.parse (inflated.toString ('utf8'));
             if (json.hasOwnProperty('M')) {
@@ -126,7 +127,7 @@ class Bittrex extends ExchangeEmitter {
 
   }
 
-  createSignature(apiSecret, challenge) {
+  createSignature(apiSecret:string, challenge:string) {
     const encodedSecret = new Buffer(apiSecret, "ascii")
     const encodedChallenge = new Buffer(challenge, "ascii")
     console.log("Encoded secret: ", encodedSecret)
@@ -135,7 +136,7 @@ class Bittrex extends ExchangeEmitter {
     return signature
   }
 
-  initOrderBook(market) {
+  initOrderBook(market:string) {
 
     console.log("Bittrex init order book", market);
 
@@ -143,7 +144,7 @@ class Bittrex extends ExchangeEmitter {
 
 
     console.log ('connected');
-    self.client.call('c2', 'QueryExchangeState', market).done(function (err, result) {
+    self.client.call('c2', 'QueryExchangeState', market).done((err:any, result:any) => {
         if (err) { console.log(err) }
 
         if (result === true) {
@@ -153,8 +154,8 @@ class Bittrex extends ExchangeEmitter {
 
   }
 
-  initExchangeDelta(market) {
-    this.client.call ('c2', 'SubscribeToExchangeDeltas', market).done (function (err, result) {
+  initExchangeDelta(market:string) {
+    this.client.call ('c2', 'SubscribeToExchangeDeltas', market).done ((err:any, result:any) => {
       if (err) { return console.log (err); }
       if (result === true) {
         console.log ('Subscribed to ' + market);
@@ -162,7 +163,7 @@ class Bittrex extends ExchangeEmitter {
     });
   }
 
-  parseOrderDelta(orderDelta, market) {
+  parseOrderDelta(orderDelta:any, market:any) {
     console.log("Parsing order delta!!!")
     if (orderDelta.hasOwnProperty('o')) {
       const typeMap = [
@@ -184,7 +185,7 @@ class Bittrex extends ExchangeEmitter {
     }
   }
 
-  parseMarketDelta(type, marketDelta, market) {
+  parseMarketDelta(type:string, marketDelta:any, market:string) {
     if (type === 'ORDER_BOOK_INIT' && marketDelta['Z'] && marketDelta['S']) {
       const sortedBids = marketDelta['Z'].sort((a, b) => {
         return b.R - a.R;
@@ -192,7 +193,7 @@ class Bittrex extends ExchangeEmitter {
       const sortedAsks = marketDelta['S'].sort((a, b) => {
         return a.R - b.R;
       }).slice(0, this.orderBookDepth);
-      const bids = sortedBids.reduce((aggregator, bid) => {
+      const bids = sortedBids.reduce((aggregator:any, bid:any) => {
           let order = {
             exchange: this.exchangeName,
             market: market,
@@ -202,7 +203,7 @@ class Bittrex extends ExchangeEmitter {
           aggregator[this.exchangeName + market + bid.R.toString()] = order;
           return aggregator;
       }, {})
-      const asks = sortedAsks.reduce((aggregator, ask) => {
+      const asks = sortedAsks.reduce((aggregator:any, ask:any) => {
           let order = {
             exchange: this.exchangeName,
             market: market,
@@ -223,7 +224,7 @@ class Bittrex extends ExchangeEmitter {
       this.emitOrderBook(initOrderBook);
     }
     if (type === 'MARKET_DELTA' && marketDelta['Z'] && marketDelta['S']) {
-      marketDelta['Z'].forEach(change => {
+      marketDelta['Z'].forEach((change:any) => {
         let marketDelta = {
           type: 'BID_UPDATE',
           market: market,
@@ -233,7 +234,7 @@ class Bittrex extends ExchangeEmitter {
         }
         this.emitOrderBook(marketDelta);
       });
-      marketDelta['S'].forEach(change => {
+      marketDelta['S'].forEach((change:any) => {
         let marketDelta = {
           type: 'ASK_UPDATE',
           market: market,

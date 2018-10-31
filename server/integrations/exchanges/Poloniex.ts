@@ -4,7 +4,10 @@ const { ExchangeEmitter } = require('../ExchangeEmitter');
 const CryptoJS = require('crypto-js');
 
 class Poloniex extends ExchangeEmitter {
-
+  socket:any
+  marketsUrl:string
+  wsuri:string
+  marketMap:any
   constructor() {
     super('poloniex');
     this.marketsUrl = 'https://poloniex.com/public?command=return24hVolume';
@@ -98,7 +101,7 @@ class Poloniex extends ExchangeEmitter {
     }
   }
 
-  parseMarkets(raw) {
+  parseMarkets(raw:any) {
     return Object.keys(raw).map(mkt => {
       return {
         market: mkt.replace('_', '-')
@@ -155,7 +158,7 @@ class Poloniex extends ExchangeEmitter {
   }
 
 
-  initOrderBook(market) {
+  initOrderBook(market:string) {
     console.log("Input into polo init: ", market)
 
     const poloMarket = market.replace('-', '_');
@@ -163,7 +166,7 @@ class Poloniex extends ExchangeEmitter {
     this.socket.send(JSON.stringify(params));
   }
 
-  parseOrderDelta(data) {
+  parseOrderDelta(data:any) {
     const orderTypeLookup = {
       0: 'SELL',
       1: 'BUY'
@@ -194,7 +197,7 @@ class Poloniex extends ExchangeEmitter {
     }
   }
 
-  parseResponse(marketDelta) {
+  parseResponse(marketDelta:any) {
     const data = JSON.parse(marketDelta)
     if (data && data[0] === 1000) {
       if (data[2] && data[2].length) {
@@ -206,14 +209,14 @@ class Poloniex extends ExchangeEmitter {
       const market = this.marketMap[data[0]]
       console.log("Polo parse order book", market)
       // Initial Response:
-      let initOrderBook = {
+      let initOrderBook:any = {
         type: 'ORDER_BOOK_INIT',
         exchange: this.exchangeName,
         market: market
       }
       const stringBids = data[2][0][1].orderBook[1];
       const bidRates = Object.keys(stringBids).slice(0, this.orderBookDepth);
-      const bids = bidRates.reduce((aggregator, bid) => {
+      const bids = bidRates.reduce((aggregator:any, bid:any) => {
         let order = {
           exchange: this.exchangeName,
           market: market,
@@ -226,7 +229,7 @@ class Poloniex extends ExchangeEmitter {
 
       const stringAsks = data[2][0][1].orderBook[0];
       const askRates = Object.keys(stringAsks).slice(0, this.orderBookDepth);
-      const asks = askRates.reduce((aggregator, ask) => {
+      const asks = askRates.reduce((aggregator:any, ask:any) => {
         let order = {
           exchange: this.exchangeName,
           market: market,
@@ -242,7 +245,7 @@ class Poloniex extends ExchangeEmitter {
       this.emitOrderBook(initOrderBook);
     } else if (data && data[2]) {
       const market = this.marketMap[data[0]]
-      data[2].forEach(delta => {
+      data[2].forEach((delta:any) => {
         if (delta[0] === 'o') {
           if (delta[1]) {
             // 1 for Bid

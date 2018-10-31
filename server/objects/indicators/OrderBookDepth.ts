@@ -57,7 +57,7 @@ const tallyVolumeStats = (book, newKeys, desiredDepth) => {
   let foundOrder = false
   let desiredDepthRate
   let totalBook = 0
-  newKeys.forEach((order, i) => {
+  newKeys.forEach((order:any, i:number) => {
     if (volumeCounter > desiredDepth && !foundOrder) {
       desiredDepthRate = book[order].rate
       foundOrder = true

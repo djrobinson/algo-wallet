@@ -7,6 +7,7 @@ const emitter = new events.EventEmitter;
 class ExchangeEmitter {
 
   exchangeName:string = ''
+  orderBookDepth:number = 50
 
   constructor(exchangeName:string) {
     this.exchangeName = exchangeName
