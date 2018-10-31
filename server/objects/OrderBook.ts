@@ -6,24 +6,25 @@ const uuidv1 = require('uuid/v1')
 */
 class OrderBook {
   id:string
+  masterBook:any = {}
   constructor() {
     this.id = uuidv1()
   }
 
-  initializeOrderBooks = (event) => {
+  initializeOrderBooks(event:any) {
     console.log("Initting order books: ", event.exchange, event.market)
     const market = event.market
     let newBook = {}
-    if (masterBook[market] && masterBook[market].bids) {
-      const allBids = {...event.bids, ...masterBook[market].bids};
+    if (this.masterBook[market] && this.masterBook[market].bids) {
+      const allBids = {...event.bids, ...this.masterBook[market].bids};
       const allBidRates = Object.keys(allBids);
       const sortedBids = allBidRates.sort((a, b) => {
         return allBids[b].rate - allBids[a].rate;
       });
-      if (!masterBook[market].summary) {
+      if (!this.masterBook[market].summary) {
         newBook.summary = {}
       } else {
-        newBook.summary = masterBook[market].summary
+        newBook.summary = this.masterBook[market].summary
       }
       newBook.summary.highestBid = allBids[sortedBids[0]].rate;
       const bidBook = {};
@@ -37,16 +38,16 @@ class OrderBook {
       newBook.bids = event.bids;
     };
 
-    if (masterBook[market] && masterBook[market].asks) {
-      const allAsks = {...event.asks, ...masterBook[market].asks};
+    if (this.masterBook[market] && this.masterBook[market].asks) {
+      const allAsks = {...event.asks, ...this.masterBook[market].asks};
       const allAskRates = Object.keys(allAsks);
       const sortedAsks = allAskRates.sort((a, b) => {
         return allAsks[a].rate - allAsks[b].rate;
       });
-      if (!masterBook[market].summary) {
+      if (!this.masterBook[market].summary) {
         newBook.summary = {}
       } else {
-        newBook.summary = masterBook[market].summary
+        newBook.summary = this.masterBook[market].summary
       }
       newBook.summary.lowestAsk = allAsks[sortedAsks[0]].rate;
       const askBook = {};
@@ -59,11 +60,19 @@ class OrderBook {
       newBook.summary.lowestAsk = event.asks[Object.keys(event.asks)[0]].rate
       newBook.asks = event.asks;
     };
-    masterBook[market] = newBook
+    this.masterBook[market] = newBook
   }
 
-  maintainOrderBook = (book, identifier, exchange, type, market, rate, amount) => {
-    let newBook = {}
+  maintainOrderBook(
+                      book:any,
+                      identifier:string,
+                      exchange:string,
+                      type:string,
+                      market:string,
+                      rate:number,
+                      amount:number
+                    ) {
+    let newBook:any = {}
     let bookKeys = Object.keys(book)
     bookKeys.forEach(o => {
       newBook[o] = book[o]
