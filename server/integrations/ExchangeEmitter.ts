@@ -8,15 +8,15 @@ class ExchangeEmitter {
 
   exchangeName:string = ''
 
-  constructor(exchangeName) {
+  constructor(exchangeName:string) {
     this.exchangeName = exchangeName
   }
 
-  emitExchangeReady(exch) {
+  emitExchangeReady(exch:string) {
     emitter.emit('EXCHANGE_READY', exch)
   }
 
-  emitOrderBook(order) {
+  emitOrderBook(order:any) {
       order['exchange'] = this.exchangeName
       if (order.type === 'ORDER_BOOK_INIT') {
         emitter.emit(order.type, order)
@@ -28,18 +28,18 @@ class ExchangeEmitter {
       }
   }
 
-  emitOrderDelta(orderDelta) {
+  emitOrderDelta(orderDelta:any) {
     emitter.emit('ORDER_DELTA', orderDelta)
   }
 
-  get(url){
+  get(url:string){
     return fetch(url)
       .then(this.handleErrors)
       .then(response => response.json())
       .catch(err => console.log(err))
   }
 
-  handleErrors(response) {
+  handleErrors(response:any) {
     if (!response.ok) {
       throw Error(response.statusText);
     }
@@ -47,4 +47,4 @@ class ExchangeEmitter {
   }
 }
 
-module.exports = { Exchange, emitter };
+module.exports = { ExchangeEmitter, emitter };

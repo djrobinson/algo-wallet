@@ -1,16 +1,16 @@
 const ccxt = require ('ccxt')
 const { emitter } = require('../ExchangeEmitter')
-const Bittrex = require('../exchanges/Bittrex')
-const Poloniex = require('../exchanges/Poloniex')
+import Bittrex = require('../exchanges/Bittrex')
+import Poloniex = require('../exchanges/Poloniex')
 
 
 class ConnectionManager {
-  constructor(markets, exchanges) {
+  constructor(markets:Array<any>, exchanges:Array<any>) {
 
   }
 
-  startWebsockets(markets, exchanges) {
-    let ws = {}
+  startWebsockets(markets:Array<any>, exchanges:Array<any>) {
+    let ws:any = {}
 
     const bittrex = new Bittrex()
     bittrex.initExchange()
@@ -21,24 +21,24 @@ class ConnectionManager {
     ws['bittrex'] = bittrex
     ws['poloniex'] = poloniex
 
-    emitter.on('EXCHANGE_READY', (exchange) => {
+    emitter.on('EXCHANGE_READY', (exchange:String) => {
       console.log(exchange, " is connected")
       markets.forEach((market) => {
         ws[exchange].initOrderBook(market)
       })
     })
-    emitter.on('ORDER_BOOK_INIT', (event) => {
+    emitter.on('ORDER_BOOK_INIT', (event:any) => {
       console.log("ORDER_BOOK_INIT ", event)
     })
-    emitter.on('MARKET_UPDATE', (event) => {
+    emitter.on('MARKET_UPDATE', (event:any) => {
       console.log("MARKET_UPDATE ", event)
     })
-    emitter.on('ORDER_DELTA', (event) => {
+    emitter.on('ORDER_DELTA', (event:any) => {
       console.log("ORDER_DELTA ", event)
     })
   }
 
-  createRestConfigs(markets, exchanges) {
+  createRestConfigs(markets:Array<any>, exchanges:Array<any>) {
      const x = {
       bittrex: new ccxt.bittrex ({
         'apiKey': process.env.BITTREX_API_KEY,

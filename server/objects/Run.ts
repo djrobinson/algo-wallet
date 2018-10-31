@@ -6,10 +6,11 @@ const uuidv1 = require('uuid/v1')
  */
 class Run {
   id:string
+  runType:string = ''
   constructor() {
     this.id = uuidv1()
   }
-  updatePriceAndRunStrategy = (event) => {
+  updatePriceAndRunStrategy = (startBook:any, event:any) => {
 
     const market = event.market
     // var orderUpdateInstance = new OrderUpdate(event)
@@ -22,18 +23,18 @@ class Run {
     let book = {}
     let type = ''
     let recalculate = false
-    if (masterBook.hasOwnProperty(market)) {
+    if (startBook.hasOwnProperty(market)) {
       const amount = event.amount
       const rate = event.rate
       const exchange = event.exchange
       const identifier = event.rateString
       if (event.type === 'BID_UPDATE') {
         type = 'bids'
-        book = masterBook[market].bids
+        book = startBook[market].bids
       }
       if (event.type === 'ASK_UPDATE') {
         type = 'asks'
-        book = masterBook[market].asks
+        book = startBook[market].asks
       }
       if (book) {
         let newBook, oldBook
@@ -53,8 +54,8 @@ class Run {
           recalculate = true
           newIntervalFlags[exchange][market] = false
         }
-        masterBook[market].summary = newSummary
-        masterBook[market][type] = newBook
+        startBook[market].summary = newSummary
+        startBook[market][type] = newBook
 
         if (recalculate) {
           runStrategy(event)
