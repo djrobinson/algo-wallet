@@ -6,8 +6,7 @@ const CryptoJS = require('crypto-js');
 class Poloniex extends ExchangeEmitter {
 
   constructor() {
-    super();
-    this.exchangeName = 'poloniex';
+    super('poloniex');
     this.marketsUrl = 'https://poloniex.com/public?command=return24hVolume';
     this.wsuri = 'wss://api2.poloniex.com:443';
     this.socket

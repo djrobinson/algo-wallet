@@ -14,7 +14,7 @@ class OrderBook {
   initializeOrderBooks(event:any) {
     console.log("Initting order books: ", event.exchange, event.market)
     const market = event.market
-    let newBook = {}
+    let newBook:any = {}
     if (this.masterBook[market] && this.masterBook[market].bids) {
       const allBids = {...event.bids, ...this.masterBook[market].bids};
       const allBidRates = Object.keys(allBids);
@@ -27,7 +27,7 @@ class OrderBook {
         newBook.summary = this.masterBook[market].summary
       }
       newBook.summary.highestBid = allBids[sortedBids[0]].rate;
-      const bidBook = {};
+      const bidBook:any = {};
       sortedBids.forEach(bid => {
         bidBook[bid] = allBids[bid];
       })
@@ -50,7 +50,7 @@ class OrderBook {
         newBook.summary = this.masterBook[market].summary
       }
       newBook.summary.lowestAsk = allAsks[sortedAsks[0]].rate;
-      const askBook = {};
+      const askBook:any = {};
       sortedAsks.forEach(ask => {
         askBook[ask] = allAsks[ask];
       })
@@ -89,7 +89,7 @@ class OrderBook {
       }
       newBook[identifier] = order
       return [newBook, book]
-    } else if (parseFloat(amount) > 0) {
+    } else if (amount > 0) {
       let order = {
         exchange: exchange,
         rate: rate,
@@ -105,7 +105,7 @@ class OrderBook {
           return newBook[a].rate - newBook[b].rate
         }
       })
-      let sortedNewBook = {}
+      let sortedNewBook:any = {}
       sortedKeys.forEach(o => {
         sortedNewBook[o] = newBook[o]
       })
