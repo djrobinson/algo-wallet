@@ -1,0 +1,21 @@
+/*
+  Balance exists outside of a run
+  It can be allocated to a run, but will be periodically tracked
+  This is to have many different runs using a single balance that is independently
+  tracked to assure our trade performance records add up
+*/
+import * as mongoose from 'mongoose';
+
+const Schema = mongoose.Schema
+
+const BalanceModel = new Schema({
+    time: { type: Date, default: Date.now },
+    exchange: String,
+    freeBalances: Array,
+    usedBalances: Array,
+    allocatedBalances: Array
+})
+
+const Balance = mongoose.model( 'Balance', BalanceModel )
+
+module.exports = Balance

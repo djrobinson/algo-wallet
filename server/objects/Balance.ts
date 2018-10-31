@@ -31,6 +31,10 @@ class Balance {
       })
     })
   }
+
+  looseChange() {
+
+  }
 }
 
 module.exports = { Balance }

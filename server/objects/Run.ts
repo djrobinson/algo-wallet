@@ -1,6 +1,9 @@
 const uuidv1 = require('uuid/v1')
 
-/* What exactly should this contain?? Performance? */
+/*
+  Will be the strategy execution itself as well as the data model for all things
+  strategy performance
+ */
 class Run {
   id:string
   constructor() {

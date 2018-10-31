@@ -2,7 +2,7 @@ const mongoose = require('mongoose')
 
 const Schema = mongoose.Schema
 
-const OrderUpdateModel = new Schema({
+const OrderDeltaModel = new Schema({
     time: { type: Date, default: Date.now },
     type: String,
     market: String,
@@ -11,6 +11,6 @@ const OrderUpdateModel = new Schema({
     amount: Number
 });
 
-const OrderUpdate = mongoose.model( 'OrderUpdate', OrderUpdateModel )
+const OrderDelta = mongoose.model( 'OrderDelta', OrderDeltaModel )
 
-module.exports = OrderUpdate
+module.exports = OrderDelta
