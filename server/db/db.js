@@ -1,4 +1,4 @@
-//Import the mongoose module
+//const the mongoose module
 var mongoose = require('mongoose');
 
 //Set up default mongoose connection

@@ -1,4 +1,4 @@
-import * as mongoose from 'mongoose';
+const * as mongoose from 'mongoose';
 
 const Schema = mongoose.Schema
 

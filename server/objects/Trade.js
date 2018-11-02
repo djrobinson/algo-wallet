@@ -1,5 +1,5 @@
-import uuidv1 = require('uuid/v1')
-import log = require('ololog')
+const uuidv1 = require('uuid/v1')
+const log = require('ololog')
 
 class Trade {
   id

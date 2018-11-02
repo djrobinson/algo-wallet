@@ -1,4 +1,4 @@
-import uuidv1 = require('uuid/v1')
+const uuidv1 = require('uuid/v1')
 
 class Balance {
   id

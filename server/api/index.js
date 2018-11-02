@@ -1,9 +1,9 @@
-import * as express from 'express'
+const * as express from 'express'
 const router = express.Router();
-import exchanges from '../exchanges'
-import ExchangeAggregator from '../base/ExchangeAggregator'
-import * as asyncMiddleware from '../utils/asyncResolve'
-import ConnectionManager from '../integrations/ConnectionManager'
+const exchanges from '../exchanges'
+const ExchangeAggregator from '../base/ExchangeAggregator'
+const * as asyncMiddleware from '../utils/asyncResolve'
+const ConnectionManager from '../integrations/ConnectionManager'
 
 router.get('/getMarkets', asyncMiddleware(async (req, res, next) => {
   const exchangeStrings = Object.keys(exchanges);
