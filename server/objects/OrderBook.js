@@ -5,16 +5,16 @@ const uuidv1 = require('uuid/v1')
 - Need to determine if this will be combined or not
 */
 class OrderBook {
-  id:string
-  masterBook:any = {}
+  id
+  masterBook = {}
   constructor() {
     this.id = uuidv1()
   }
 
-  initializeOrderBooks(event:any) {
+  initializeOrderBooks(event) {
     console.log("Initting order books: ", event.exchange, event.market)
     const market = event.market
-    let newBook:any = {}
+    let newBook = {}
     if (this.masterBook[market] && this.masterBook[market].bids) {
       const allBids = {...event.bids, ...this.masterBook[market].bids};
       const allBidRates = Object.keys(allBids);
@@ -27,7 +27,7 @@ class OrderBook {
         newBook.summary = this.masterBook[market].summary
       }
       newBook.summary.highestBid = allBids[sortedBids[0]].rate;
-      const bidBook:any = {};
+      const bidBook = {};
       sortedBids.forEach(bid => {
         bidBook[bid] = allBids[bid];
       })
@@ -50,7 +50,7 @@ class OrderBook {
         newBook.summary = this.masterBook[market].summary
       }
       newBook.summary.lowestAsk = allAsks[sortedAsks[0]].rate;
-      const askBook:any = {};
+      const askBook = {};
       sortedAsks.forEach(ask => {
         askBook[ask] = allAsks[ask];
       })
@@ -64,15 +64,15 @@ class OrderBook {
   }
 
   maintainOrderBook(
-                      book:any,
-                      identifier:string,
-                      exchange:string,
-                      type:string,
-                      market:string,
-                      rate:number,
-                      amount:number
+                      book,
+                      identifier,
+                      exchange,
+                      type,
+                      market,
+                      rate,
+                      amount
                     ) {
-    let newBook:any = {}
+    let newBook = {}
     let bookKeys = Object.keys(book)
     bookKeys.forEach(o => {
       newBook[o] = book[o]
@@ -105,7 +105,7 @@ class OrderBook {
           return newBook[a].rate - newBook[b].rate
         }
       })
-      let sortedNewBook:any = {}
+      let sortedNewBook = {}
       sortedKeys.forEach(o => {
         sortedNewBook[o] = newBook[o]
       })

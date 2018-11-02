@@ -5,12 +5,12 @@ const uuidv1 = require('uuid/v1')
   strategy performance
  */
 class Run {
-  id:string
-  runType:string = ''
+  id
+  runType = ''
   constructor() {
     this.id = uuidv1()
   }
-  updatePriceAndRunStrategy = (startBook:any, event:any) => {
+  updatePriceAndRunStrategy = (startBook, event) => {
 
     const market = event.market
     // var orderUpdateInstance = new OrderUpdate(event)

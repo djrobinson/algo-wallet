@@ -10,7 +10,7 @@ class ConnectionManager {
   }
 
   startWebsockets(markets:Array<any>, exchanges:Array<any>) {
-    let ws:any = {}
+    let ws = {}
 
     const bittrex = new Bittrex()
     bittrex.initExchange()
@@ -21,19 +21,19 @@ class ConnectionManager {
     ws['bittrex'] = bittrex
     ws['poloniex'] = poloniex
 
-    emitter.on('EXCHANGE_READY', (exchange:String) => {
+    emitter.on('EXCHANGE_READY', (exchange) => {
       console.log(exchange, " is connected")
       markets.forEach((market) => {
         ws[exchange].initOrderBook(market)
       })
     })
-    emitter.on('ORDER_BOOK_INIT', (event:any) => {
+    emitter.on('ORDER_BOOK_INIT', (event) => {
       console.log("ORDER_BOOK_INIT ", event)
     })
-    emitter.on('MARKET_UPDATE', (event:any) => {
+    emitter.on('MARKET_UPDATE', (event) => {
       console.log("MARKET_UPDATE ", event)
     })
-    emitter.on('ORDER_DELTA', (event:any) => {
+    emitter.on('ORDER_DELTA', (event) => {
       console.log("ORDER_DELTA ", event)
     })
   }

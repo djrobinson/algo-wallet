@@ -1,7 +1,7 @@
 import uuidv1 = require('uuid/v1')
 
 class Balance {
-  id:string
+  id
   constructor() {
     this.id = uuidv1()
   }

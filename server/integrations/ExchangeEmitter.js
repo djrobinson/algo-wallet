@@ -6,18 +6,18 @@ const emitter = new events.EventEmitter;
 
 class ExchangeEmitter {
 
-  exchangeName:string = ''
-  orderBookDepth:number = 50
+  exchangeName = ''
+  orderBookDepth = 50
 
-  constructor(exchangeName:string) {
+  constructor(exchangeName) {
     this.exchangeName = exchangeName
   }
 
-  emitExchangeReady(exch:string) {
+  emitExchangeReady(exch) {
     emitter.emit('EXCHANGE_READY', exch)
   }
 
-  emitOrderBook(order:any) {
+  emitOrderBook(order) {
       order['exchange'] = this.exchangeName
       if (order.type === 'ORDER_BOOK_INIT') {
         emitter.emit(order.type, order)
@@ -29,18 +29,18 @@ class ExchangeEmitter {
       }
   }
 
-  emitOrderDelta(orderDelta:any) {
+  emitOrderDelta(orderDelta) {
     emitter.emit('ORDER_DELTA', orderDelta)
   }
 
-  get(url:string){
+  get(url){
     return fetch(url)
       .then(this.handleErrors)
       .then(response => response.json())
       .catch(err => console.log(err))
   }
 
-  handleErrors(response:any) {
+  handleErrors(response) {
     if (!response.ok) {
       throw Error(response.statusText);
     }
