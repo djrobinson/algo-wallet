@@ -44,6 +44,24 @@ class ExchangeEmitter {
     }
     return response;
   }
+  createRestConfigs(markets, exchanges) {
+     const x = {
+      bittrex: new ccxt.bittrex ({
+        'apiKey': process.env.BITTREX_API_KEY,
+        'secret': process.env.BITTREX_SECRET,
+        'verbose': false, // set to true to see more debugging output
+        'timeout': 60000,
+        'enableRateLimit': true, // add this
+      }),
+      poloniex: new ccxt.poloniex ({
+        'apiKey': process.env.POLONIEX_API_KEY,
+        'secret': process.env.POLONIEX_SECRET,
+        'verbose': false, // set to true to see more debugging output
+        'timeout': 60000,
+        'enableRateLimit': true, // add this
+      })
+    }
+  }
 }
 
 module.exports = { ExchangeEmitter, emitter };

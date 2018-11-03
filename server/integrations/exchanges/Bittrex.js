@@ -4,11 +4,18 @@ const zlib = require('zlib');
 const { ExchangeEmitter } = require('../ExchangeEmitter');
 const CryptoJS = require('crypto-js');
 
+
 class Bittrex extends ExchangeEmitter {
   constructor() {
     super('bittrex')
     this.client = {}
-
+    this.restExchange = new ccxt.bittrex ({
+        'apiKey': process.env.BITTREX_API_KEY,
+        'secret': process.env.BITTREX_SECRET,
+        'verbose': false, // set to true to see more debugging output
+        'timeout': 60000,
+        'enableRateLimit': true, // add this
+    })
     this.marketsUrl = 'https://bittrex.com/api/v1.1/public/getmarkets';
   }
 

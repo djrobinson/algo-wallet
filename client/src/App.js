@@ -12,13 +12,18 @@ class App extends Component {
   }
 
   componentDidMount() {
-
+    fetch('/api/getBalances')
+      .then(res => res.json())
+      .then(data => {
+        console.log("What is data from balances: ", data)
+      });
   }
 
   render() {
     return (
       <div className="App">
-        <TradeEngine />
+        <h1>Algo Wallet</h1>
+
       </div>
     );
   }

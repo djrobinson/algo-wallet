@@ -2,7 +2,7 @@ const  express = require('express')
 const router = express.Router();
 const exchanges = require('../exchanges')
 const Run = require('../objects/Run')
-const  asyncMiddleware = require('../utils/asyncResolve')
+const Balance = require('../objects/Balance')
 const ConnectionManager = require('../integrations/ConnectionManager')
 
 router.get('/getMarkets', async (req, res, next) => {
@@ -26,9 +26,11 @@ router.get('/getMarkets', async (req, res, next) => {
   })
 });
 
-// router.get('/getBalances', asyncMiddleware(async (req, res, next) => {
-
-// }))
+router.get('/getBalances', async (req, res, next) => {
+  const balance = new Balance()
+  const balances = await balance.getBalances()
+  res.json(balances)
+})
 
 // router.post('/setTradeStrategy', asyncMiddleware(async (req, res, next) => {
 
