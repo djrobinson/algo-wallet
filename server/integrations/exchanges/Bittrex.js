@@ -1,4 +1,5 @@
 const signalR = require ('signalr-client');
+const ccxt = require ('ccxt')
 const jsonic = require('jsonic');
 const zlib = require('zlib');
 const { ExchangeEmitter } = require('../ExchangeEmitter');
@@ -27,6 +28,11 @@ class Bittrex extends ExchangeEmitter {
     } catch (e) {
       return Promise.reject(e);
     }
+  }
+
+  async getBalance() {
+    console.log("Get balance rest exchange: ", this.restExchange)
+    return await this.fetchBalance(this.restExchange)
   }
 
   parseMarkets(raw) {

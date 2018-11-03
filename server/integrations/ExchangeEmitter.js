@@ -5,8 +5,6 @@ const events = require('events');
 const emitter = new events.EventEmitter;
 
 class ExchangeEmitter {
-
-
   constructor(exchangeName) {
     this.exchangeName = exchangeName
   }
@@ -44,22 +42,30 @@ class ExchangeEmitter {
     }
     return response;
   }
-  createRestConfigs(markets, exchanges) {
-     const x = {
-      bittrex: new ccxt.bittrex ({
-        'apiKey': process.env.BITTREX_API_KEY,
-        'secret': process.env.BITTREX_SECRET,
-        'verbose': false, // set to true to see more debugging output
-        'timeout': 60000,
-        'enableRateLimit': true, // add this
-      }),
-      poloniex: new ccxt.poloniex ({
-        'apiKey': process.env.POLONIEX_API_KEY,
-        'secret': process.env.POLONIEX_SECRET,
-        'verbose': false, // set to true to see more debugging output
-        'timeout': 60000,
-        'enableRateLimit': true, // add this
-      })
+
+  async fetchBalance(exch) {
+    console.log("What is fetch balance: ", exch)
+    try {
+        // fetch account balance from the exchange, save to global variable
+        const currentBalances = await exch.fetchBalance()
+        log.bright.lightGreen ( "Initial Balances: ", currentBalances )
+        return currentBalances
+    } catch (e) {
+        if (e instanceof ccxt.DDoSProtection || e.message.includes ('ECONNRESET')) {
+            log.bright.yellow ('[DDoS Protection] ' + e.message)
+        } else if (e instanceof ccxt.RequestTimeout) {
+            log.bright.yellow ('[Request Timeout] ' + e.message)
+        } else if (e instanceof ccxt.AuthenticationError) {
+            log.bright.yellow ('[Authentication Error] ' + e.message)
+        } else if (e instanceof ccxt.ExchangeNotAvailable) {
+            log.bright.yellow ('[Exchange Not Available Error] ' + e.message)
+        } else if (e instanceof ccxt.ExchangeError) {
+            log.bright.yellow ('[Exchange Error] ' + e.message)
+        } else if (e instanceof ccxt.NetworkError) {
+            log.bright.yellow ('[Network Error] ' + e.message)
+        } else {
+            throw e
+        }
     }
   }
 }

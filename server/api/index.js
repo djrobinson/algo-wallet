@@ -3,6 +3,7 @@ const router = express.Router();
 const exchanges = require('../exchanges')
 const Run = require('../objects/Run')
 const Balance = require('../objects/Balance')
+const Bittrex = require('../integrations/exchanges/Bittrex')
 const ConnectionManager = require('../integrations/ConnectionManager')
 
 router.get('/getMarkets', async (req, res, next) => {
@@ -27,7 +28,9 @@ router.get('/getMarkets', async (req, res, next) => {
 });
 
 router.get('/getBalances', async (req, res, next) => {
-  const balance = new Balance()
+  const bittrex = new Bittrex()
+  const exchanges = [bittrex]
+  const balance = new Balance(exchanges)
   const balances = await balance.getBalances()
   res.json(balances)
 })
