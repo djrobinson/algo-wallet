@@ -1,6 +1,8 @@
 require('babel-polyfill');
 require('es6-promise').polyfill();
 require('isomorphic-fetch');
+const log = require ('ololog')
+const ccxt = require ('ccxt')
 const events = require('events');
 const emitter = new events.EventEmitter;
 
