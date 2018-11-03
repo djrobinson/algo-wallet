@@ -1,11 +1,11 @@
 const  express = require('express')
 const router = express.Router();
 const exchanges = require('../exchanges')
-const ExchangeAggregator = require('../base/ExchangeAggregator')
+const Run = require('../objects/Run')
 const  asyncMiddleware = require('../utils/asyncResolve')
 const ConnectionManager = require('../integrations/ConnectionManager')
 
-router.get('/getMarkets', asyncMiddleware(async (req, res, next) => {
+router.get('/getMarkets', async (req, res, next) => {
   const exchangeStrings = Object.keys(exchanges);
   console.log("Trying home");
   const promisedExchanges = exchangeStrings.map(async (exch) => {
@@ -24,23 +24,23 @@ router.get('/getMarkets', asyncMiddleware(async (req, res, next) => {
     });
     res.json(sharedMarkets);
   })
-}));
+});
 
-router.get('/getBalances', asyncMiddleware(async (req, res, next) => {
+// router.get('/getBalances', asyncMiddleware(async (req, res, next) => {
 
-}))
+// }))
 
-router.post('/setTradeStrategy', asyncMiddleware(async (req, res, next) => {
+// router.post('/setTradeStrategy', asyncMiddleware(async (req, res, next) => {
 
-}))
+// }))
 
-router.post('/startRun', asyncMiddleware(async (req, res, next) => {
+router.post('/startRun', async (req, res, next) => {
   const markets = req.body.markets
   const exchanges = req.body.exchanges
   const connection = new ConnectionManager(markets, exchanges)
 
   // Is it possible to register the websocket client to emit messages back to here?
 
-}))
+})
 
 module.exports = router;

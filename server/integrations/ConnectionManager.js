@@ -1,7 +1,7 @@
 const ccxt = require ('ccxt')
-const { emitter } = require('../ExchangeEmitter')
-const Bittrex = require('../exchanges/Bittrex')
-const Poloniex = require('../exchanges/Poloniex')
+const { emitter } = require('./ExchangeEmitter')
+const Bittrex = require('./exchanges/Bittrex')
+const Poloniex = require('./exchanges/Poloniex')
 
 
 class ConnectionManager {
