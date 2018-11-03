@@ -1,9 +1,9 @@
-const * as express from 'express'
+const  express = require('express')
 const router = express.Router();
-const exchanges from '../exchanges'
-const ExchangeAggregator from '../base/ExchangeAggregator'
-const * as asyncMiddleware from '../utils/asyncResolve'
-const ConnectionManager from '../integrations/ConnectionManager'
+const exchanges = require('../exchanges')
+const ExchangeAggregator = require('../base/ExchangeAggregator')
+const  asyncMiddleware = require('../utils/asyncResolve')
+const ConnectionManager = require('../integrations/ConnectionManager')
 
 router.get('/getMarkets', asyncMiddleware(async (req, res, next) => {
   const exchangeStrings = Object.keys(exchanges);

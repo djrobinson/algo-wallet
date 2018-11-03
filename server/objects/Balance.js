@@ -1,12 +1,12 @@
 const uuidv1 = require('uuid/v1')
 
 class Balance {
-  id
+
   constructor() {
     this.id = uuidv1()
   }
 
-  getBalances() {
+  async getBalances() {
     const openBalances = await Promise.all(exchanges.map(async (exch) => {
       const balances = await getBalances(exch)
       currentBalances[exch] = balances

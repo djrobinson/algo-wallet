@@ -8,8 +8,6 @@ const app = express();
 const server = require('http').Server(app);
 const io = require('socket.io')(server);
 
-const ExchangeAggregator = require('./server-build/base/ExchangeAggregator');
-const {start, stop} = require('./server-build/base/TradeEngine');
 const indexRouter = require('./server-build/api/index');
 const bodyParser = require('body-parser');
 

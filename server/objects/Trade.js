@@ -2,13 +2,11 @@ const uuidv1 = require('uuid/v1')
 const log = require('ololog')
 
 class Trade {
-  id
-  pendingCancels = []
   constructor() {
     this.id = uuidv1()
   }
 
-  createOrder = async (exchange, symbol, orderType, side, amount, price) => {
+   async createOrder(exchange, symbol, orderType, side, amount, price) {
     try {
       log.bright.yellow("Order: ", symbol, side, price, amount)
       const response = await x[exchange].createOrder (symbol, orderType, side, amount, price)
@@ -20,7 +18,7 @@ class Trade {
     }
   }
 
-  cancelOrder = async (order) => {
+  async cancelOrder (order) {
     const exchange = order.exchange
     const id = order.id
     if (this.pendingCancels.indexOf(id) === -1) {

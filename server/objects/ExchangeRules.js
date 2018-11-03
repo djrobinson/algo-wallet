@@ -2,12 +2,12 @@ const uuidv1 = require('uuid/v1')
 
 
 class ExchangeRules {
-  id
+
   constructor() {
     this.id = uuidv1()
   }
 
-  updateRules() {
+  async updateRules() {
     // Step 2: Order Sizing
     const bittrexArray = await x['bittrex'].fetchMarkets()
     const poloArray = await x['poloniex'].fetchMarkets()

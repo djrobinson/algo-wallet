@@ -5,11 +5,11 @@ const Poloniex = require('../exchanges/Poloniex')
 
 
 class ConnectionManager {
-  constructor(markets:Array<any>, exchanges:Array<any>) {
+  constructor(markets, exchanges) {
 
   }
 
-  startWebsockets(markets:Array<any>, exchanges:Array<any>) {
+  startWebsockets(markets, exchanges) {
     let ws = {}
 
     const bittrex = new Bittrex()
@@ -38,7 +38,7 @@ class ConnectionManager {
     })
   }
 
-  createRestConfigs(markets:Array<any>, exchanges:Array<any>) {
+  createRestConfigs(markets, exchanges) {
      const x = {
       bittrex: new ccxt.bittrex ({
         'apiKey': process.env.BITTREX_API_KEY,

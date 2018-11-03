@@ -4,7 +4,7 @@
   This is to have many different runs using a single balance that is independently
   tracked to assure our trade performance records add up
 */
-const * as mongoose from 'mongoose';
+const mongoose = require('mongoose');
 
 const Schema = mongoose.Schema
 

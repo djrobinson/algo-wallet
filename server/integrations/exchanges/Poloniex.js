@@ -4,10 +4,6 @@ const { ExchangeEmitter } = require('../ExchangeEmitter');
 const CryptoJS = require('crypto-js');
 
 class Poloniex extends ExchangeEmitter {
-  socket
-  marketsUrl
-  wsuri
-  marketMap
   constructor() {
     super('poloniex');
     this.marketsUrl = 'https://poloniex.com/public?command=return24hVolume';

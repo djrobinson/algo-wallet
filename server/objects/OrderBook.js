@@ -5,8 +5,6 @@ const uuidv1 = require('uuid/v1')
 - Need to determine if this will be combined or not
 */
 class OrderBook {
-  id
-  masterBook = {}
   constructor() {
     this.id = uuidv1()
   }
