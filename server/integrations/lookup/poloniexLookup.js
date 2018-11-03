@@ -1,4 +1,4 @@
-const markets = {
+const marketMap = {
       7  : 'BTC-BCN',
       14 : 'BTC-BTS',
       15 : 'BTC-BURST',
@@ -74,4 +74,4 @@ const markets = {
       230: 'ETH-MANA'
     }
 
-module.exports = { markets }
+module.exports = { marketMap }

@@ -47,11 +47,9 @@ class ExchangeEmitter {
 
   async fetchBalance() {
     const exch = this.restExchange
-    console.log("What is fetch balance: ", exch)
     try {
         // fetch account balance from the exchange, save to global variable
         const currentBalances = await exch.fetchBalance()
-        log.bright.lightGreen ( "Initial Balances: ", currentBalances )
         return currentBalances
     } catch (e) {
         if (e instanceof ccxt.DDoSProtection || e.message.includes ('ECONNRESET')) {

@@ -1,5 +1,6 @@
 const uuidv1 = require('uuid/v1')
 const ccxt = require ('ccxt')
+const balanceModel = require('../db/models/balance.model');
 
 class Balance {
 
@@ -11,34 +12,30 @@ class Balance {
   async getBalances() {
     const openBalances = await Promise.all(this.exchanges.map(async (exch) => {
       console.log("What is exchange: ", exch.exchangeName)
-      const balances = await exch.fetchBalance()
-      // Standardize balances
-      return {
+      const rawBalances = await exch.fetchBalance()
+      // Standardize rawBalances
+      const balForSave = {
         exchange: exch.exchangeName,
-        free: balances.free,
-        used: balances.used,
-        total: balances.total
+        free: rawBalances.free,
+        used: rawBalances.used,
+        total: rawBalances.total
       }
+      const balanceInstance = new balanceModel(balForSave)
+
+      balanceInstance.save((err) => {
+        if (err) console.log("There was an error saving  instance")
+        console.log("Save of balance successful")
+      })
+      return balForSave
     }))
-    return openBalances.reduce((acc, curr) => {
+    let balances = openBalances.reduce((acc, curr) => {
       acc[curr.exchange] = {}
       acc[curr.exchange].free = curr.free
       acc[curr.exchange].used = curr.used
       acc[curr.exchange].total = curr.total
       return acc
     }, {})
-    // openBalances.forEach(bals => {
-    //   console.log('What bals: ', bals)
-    //   Object.keys(bals.balances).forEach(bal => {
-    //     if ( bals.balances[bal].free > 0 ) {
-    //       looseChange.push({
-    //         exchange: bals.exch,
-    //         coin: bal,
-    //         amount: bals.balances[bal].free
-    //       })
-    //     }
-    //   })
-    // })
+    return balances
   }
 
   looseChange() {

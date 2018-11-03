@@ -11,7 +11,7 @@ const io = require('socket.io')(server);
 const indexRouter = require('./server-build/api/index');
 const bodyParser = require('body-parser');
 
-// const db = require('./server-build/db/db');
+const db = require('./server-build/db/db');
 
 app.use(logger('dev'));
 app.use(express.json());

@@ -1,6 +1,5 @@
 const uuidv1 = require('uuid/v1')
 
-
 class ExchangeRules {
 
   constructor() {
@@ -19,5 +18,4 @@ class ExchangeRules {
     }, {})
     log.bright.blue(marketInfo)
   }
-
 }

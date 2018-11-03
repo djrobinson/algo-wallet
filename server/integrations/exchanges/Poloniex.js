@@ -2,6 +2,7 @@ const ccxt = require ('ccxt')
 const Moment = require('moment')
 const WebSocket = require('ws')
 const { ExchangeEmitter } = require('../ExchangeEmitter')
+const { marketMap } = require('../lookup/poloniexLookup')
 const CryptoJS = require('crypto-js')
 
 class Poloniex extends ExchangeEmitter {
@@ -17,81 +18,7 @@ class Poloniex extends ExchangeEmitter {
         'timeout': 60000,
         'enableRateLimit': true, // add this
     })
-    this.marketMap = {
-      7  : 'BTC-BCN',
-      14 : 'BTC-BTS',
-      15 : 'BTC-BURST',
-      20 : 'BTC-CLAM',
-      25 : 'BTC-DGB',
-      27 : 'BTC-DOGE',
-      24 : 'BTC-DASH',
-      38 : 'BTC-GAME',
-      43 : 'BTC-HUC',
-      50 : 'BTC-LTC',
-      51 : 'BTC-MAID',
-      58 : 'BTC-OMNI',
-      61 : 'BTC-NAV',
-      64 : 'BTC-NMC',
-      69 : 'BTC-NXT',
-      75 : 'BTC-PPC',
-      89 : 'BTC-STR',
-      92 : 'BTC-SYS',
-      97 : 'BTC-VIA',
-      100: 'BTC-VTC',
-      108: 'BTC-XCP',
-      114: 'BTC-XMR',
-      116: 'BTC-XPM',
-      117: 'BTC-XRP',
-      112: 'BTC-XEM',
-      148: 'BTC-ETH',
-      150: 'BTC-SC',
-      155: 'BTC-FCT',
-      162: 'BTC-DCR',
-      163: 'BTC-LSK',
-      167: 'BTC-LBC',
-      168: 'BTC-STEEM',
-      170: 'BTC-SBD',
-      171: 'BTC-ETC',
-      174: 'BTC-REP',
-      177: 'BTC-ARDR',
-      178: 'BTC-ZEC',
-      182: 'BTC-STRAT',
-      184: 'BTC-PASC',
-      185: 'BTC-GNT',
-      189: 'BTC-BCH',
-      192: 'BTC-ZRX',
-      194: 'BTC-CVC',
-      196: 'BTC-OMG',
-      198: 'BTC-GAS',
-      200: 'BTC-STORJ',
-      201: 'BTC-EOS',
-      204: 'BTC-SNT',
-      207: 'BTC-KNC',
-      210: 'BTC-BAT',
-      213: 'BTC-LOOM',
-      221: 'BTC-QTUM',
-      232: 'BTC-BNT',
-      229: 'BTC-MANA',
-      166: 'ETH-LSK',
-      169: 'ETH-STEEM',
-      172: 'ETH-ETC',
-      176: 'ETH-REP',
-      179: 'ETH-ZEC',
-      186: 'ETH-GNT',
-      190: 'ETH-BCH',
-      193: 'ETH-ZRX',
-      195: 'ETH-CVC',
-      197: 'ETH-OMG',
-      199: 'ETH-GAS',
-      202: 'ETH-EOS',
-      205: 'ETH-SNT',
-      208: 'ETH-KNC',
-      211: 'ETH-BAT',
-      214: 'ETH-LOOM',
-      222: 'ETH-QTUM',
-      233: 'ETH-BNT',
-      230: 'ETH-MANA'
-    }
+    this.marketMap = marketMap
     console.log("Starting polo")
   }
 
