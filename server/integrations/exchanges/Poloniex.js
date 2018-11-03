@@ -1,7 +1,8 @@
-const Moment = require('moment');
-const WebSocket = require('ws');
-const { ExchangeEmitter } = require('../ExchangeEmitter');
-const CryptoJS = require('crypto-js');
+const ccxt = require ('ccxt')
+const Moment = require('moment')
+const WebSocket = require('ws')
+const { ExchangeEmitter } = require('../ExchangeEmitter')
+const CryptoJS = require('crypto-js')
 
 class Poloniex extends ExchangeEmitter {
   constructor() {
@@ -9,6 +10,13 @@ class Poloniex extends ExchangeEmitter {
     this.marketsUrl = 'https://poloniex.com/public?command=return24hVolume';
     this.wsuri = 'wss://api2.poloniex.com:443';
     this.socket
+    this.restExchange = new ccxt.poloniex ({
+        'apiKey': process.env.POLONIEX_API_KEY,
+        'secret': process.env.POLONIEX_SECRET,
+        'verbose': false, // set to true to see more debugging output
+        'timeout': 60000,
+        'enableRateLimit': true, // add this
+    })
     this.marketMap = {
       7  : 'BTC-BCN',
       14 : 'BTC-BTS',

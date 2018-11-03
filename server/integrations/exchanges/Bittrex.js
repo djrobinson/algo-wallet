@@ -30,11 +30,6 @@ class Bittrex extends ExchangeEmitter {
     }
   }
 
-  async getBalance() {
-    console.log("Get balance rest exchange: ", this.restExchange)
-    return await this.fetchBalance(this.restExchange)
-  }
-
   parseMarkets(raw) {
     return raw.map((mkt) => {
       return {

@@ -45,7 +45,8 @@ class ExchangeEmitter {
     return response;
   }
 
-  async fetchBalance(exch) {
+  async fetchBalance() {
+    const exch = this.restExchange
     console.log("What is fetch balance: ", exch)
     try {
         // fetch account balance from the exchange, save to global variable

@@ -11,14 +11,22 @@ class Balance {
   async getBalances() {
     const openBalances = await Promise.all(this.exchanges.map(async (exch) => {
       console.log("What is exchange: ", exch.exchangeName)
-      const balances = await exch.getBalance(exch)
+      const balances = await exch.fetchBalance()
       // Standardize balances
       return {
         exchange: exch.exchangeName,
-        balances
+        free: balances.free,
+        used: balances.used,
+        total: balances.total
       }
     }))
-    return openBalances
+    return openBalances.reduce((acc, curr) => {
+      acc[curr.exchange] = {}
+      acc[curr.exchange].free = curr.free
+      acc[curr.exchange].used = curr.used
+      acc[curr.exchange].total = curr.total
+      return acc
+    }, {})
     // openBalances.forEach(bals => {
     //   console.log('What bals: ', bals)
     //   Object.keys(bals.balances).forEach(bal => {
