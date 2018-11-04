@@ -1,11 +1,8 @@
 import React, { Component } from 'react';
 import { Col, Row } from 'react-bootstrap';
-import OrderBook from './OrderBook';
-import TradeEngine from './TradeEngine';
-import Balances from './balances/Balances'
-import './App.css';
+import './BalancesTile.css';
 
-class App extends Component {
+class BalancesTile extends Component {
   state = {
     markets: [],
     showOrderBook: false,
@@ -13,16 +10,16 @@ class App extends Component {
   }
 
   componentDidMount() {
+
   }
 
   render() {
     return (
-      <div className="App">
-        <Balances />
-
+      <div className="balances-tile-container">
+        <h1>{this.props.mkt}</h1>
       </div>
     );
   }
 }
 
-export default App;
+export default BalancesTile;

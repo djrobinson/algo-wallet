@@ -1,6 +1,6 @@
-import React, { Component } from 'react';
-import { Col, Row } from 'react-bootstrap';
-import OrderBook from './OrderBook';
+import React, { Component } from 'react'
+import { Col, Row } from 'react-bootstrap'
+import BalanceTile from './balances-tile/BalancesTile'
 import './Balances.css';
 
 class Balances extends Component {
@@ -24,10 +24,16 @@ class Balances extends Component {
 
   render() {
     return (
-      <div className="balances-container">
+      <div className="balances-row">
         {
           (this.state.markets.length) && (
-            this.state.markets.map(mkt => <h1>{mkt}</h1>)
+            this.state.markets.map(mkt => {
+              return (
+                <BalanceTile
+                  mkt={mkt}
+                  />
+                )
+            })
           )
         }
       </div>
