@@ -14,6 +14,10 @@ class Balances extends Component {
     fetch('/api/getBalances')
       .then(res => res.json())
       .then(data => {
+        this.setState({
+          markets: data.markets,
+          balances: data
+        })
         console.log("What is data from balances: ", data)
       });
   }
@@ -21,6 +25,11 @@ class Balances extends Component {
   render() {
     return (
       <div className="balances-container">
+        {
+          (this.state.markets.length) && (
+            this.state.markets.map(mkt => <h1>{mkt}</h1>)
+          )
+        }
       </div>
     );
   }
