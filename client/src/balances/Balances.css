@@ -1,3 +1,10 @@
 .balances-tile-container {
   display: inline-flex;
+  width: 150px;
+}
+
+.balances-row {
+  width: 100%;
+  justify-content: space-between;
+  align-content: space-between;
 }

@@ -6,8 +6,7 @@ import './Balances.css';
 class Balances extends Component {
   state = {
     markets: [],
-    showOrderBook: false,
-    selectedMarket: ''
+    balances: {}
   }
 
   componentDidMount() {
@@ -28,11 +27,10 @@ class Balances extends Component {
         {
           (this.state.markets.length) && (
             this.state.markets.map(mkt => {
-              return (
-                <BalanceTile
-                  mkt={mkt}
-                  />
-                )
+              return <BalanceTile
+                        mkt={mkt}
+                        balances={this.state.balances[mkt]}
+                      />
             })
           )
         }
