@@ -30,9 +30,27 @@ class Balance {
     }))
     let balances = openBalances.reduce((acc, curr) => {
       acc[curr.exchange] = {}
-      acc[curr.exchange].free = curr.free
-      acc[curr.exchange].used = curr.used
-      acc[curr.exchange].total = curr.total
+      acc[curr.exchange].free = Object.keys(curr.free).reduce((a, b) => {
+        if (curr.free[b] > 0) {
+          a[b] = curr.free[b]
+          return a
+        }
+        return a
+      }, {})
+      acc[curr.exchange].used = Object.keys(curr.used).reduce((a, b) => {
+        if (curr.used[b] > 0) {
+          a[b] = curr.used[b]
+          return a
+        }
+        return a
+      }, {})
+      acc[curr.exchange].total = Object.keys(curr.total).reduce((a, b) => {
+        if (curr.total[b] > 0) {
+          a[b] = curr.total[b]
+          return a
+        }
+        return a
+      }, {})
       return acc
     }, {})
     return balances
