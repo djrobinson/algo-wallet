@@ -11,9 +11,7 @@ const Schema = mongoose.Schema
 const BalanceModel = new Schema({
     time: { type: Date, default: Date.now },
     exchange: String,
-    free: Array,
-    used: Array,
-    total: Array
+    markets: Object
 })
 
 const Balance = mongoose.model( 'Balance', BalanceModel )
