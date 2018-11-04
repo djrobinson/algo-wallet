@@ -34,7 +34,7 @@ class TradeEngine extends Component {
   }
 
   startSocket() {
-    const market = this.props.market;
+
     if (this.socket) {
       console.log("Disconnecting socket first");
       this.socket.emit('end');

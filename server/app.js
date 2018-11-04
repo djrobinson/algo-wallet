@@ -8,10 +8,11 @@ const app = express();
 const server = require('http').Server(app);
 const io = require('socket.io')(server);
 
-const indexRouter = require('./server-build/api/index');
+const indexRouter = require('./api/index');
+const { ConnectionManager } = require('./integrations/ConnectionManager')
 const bodyParser = require('body-parser');
 
-const db = require('./server-build/db/db');
+const db = require('./db/db');
 
 app.use(logger('dev'));
 app.use(express.json());
@@ -24,28 +25,39 @@ app.use(express.static(path.join(__dirname, 'client/build')));
 
 io.on('connection', client => {
   console.log("Connection", client.id);
-  const exchanges = ['bittrex', 'poloniex'];
-  // exchangeAggregator = new ExchangeAggregator(exchanges);
+  const markets = ['BTC-ETH', 'BTC-LTC']
+  const exchanges = ['bittrex', 'poloniex']
 
 
-  const aggregatorCallback = msg => {
+  const registerOrderBookInit = msg => {
     client.emit('orderbook', msg);
   };
 
-  const tradeEngineCallback = msg => {
+  const registerEngineEvents = msg => {
     client.emit('ENGINE_EVENT', msg)
   }
 
-  const orderActionCallback = msg => {
+  const registerOrderActions = msg => {
     client.emit('ORDER_ACTION', msg)
   }
 
-  client.on('startEngine', req => {
-    console.log("What is the req from start engine: ", req)
-    const markets = ['BTC-ETH', 'BTC-LTC', 'BTC-XMR', 'BTC-DGB']
-    const exchanges = ['bittrex', 'poloniex']
-    start(markets, exchanges, tradeEngineCallback, orderActionCallback)
-  })
+  const cbs = {
+    registerOrderBookInit,
+    registerEngineEvents,
+    registerOrderActions
+  }
+
+
+
+  const connection = new ConnectionManager()
+  connection.startWebsockets(markets, exchanges, cbs)
+
+  // client.on('startEngine', req => {
+  //   console.log("What is the req from start engine: ", req)
+  //   const markets = ['BTC-ETH', 'BTC-LTC', 'BTC-XMR', 'BTC-DGB']
+  //   const exchanges = ['bittrex', 'poloniex']
+  //   start(markets, exchanges, tradeEngineCallback, orderActionCallback)
+  // })
 
   client.on('stopEngine', req => {
     stop()
@@ -85,7 +97,7 @@ app.get('initialize', (req, res) => {
 
 
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname+'/client/build/index.html'));
+  res.sendFile(path.join(__dirname+'../client/build/index.html'));
 });
 
 // catch 404 and forward to error handler
@@ -107,4 +119,4 @@ app.use((err, req, res, next) => {
 
 
 
-module.exports = {app: app, server: server};
+module.exports = {app, server, io};

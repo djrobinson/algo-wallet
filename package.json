@@ -11,10 +11,7 @@
     "test": "mocha server --recursive",
     "dev": "npm run clean && npm run compile && PORT=3001 node bin/www",
     "start": "node bin/www",
-    "heroku-postbuild": "cd client && npm install && npm run build",
-    "start-ts": "npm run build:live",
-    "build": "tsc -p .",
-    "build:live": "nodemon --watch 'trade-engine/*.ts' --exec 'ts-node'"
+    "heroku-postbuild": "cd client && npm install && npm run build"
   },
   "dependencies": {
     "autobahn": "^18.3.2",

@@ -40,13 +40,4 @@ router.get('/getBalances', async (req, res, next) => {
 
 // }))
 
-router.post('/startRun', async (req, res, next) => {
-  const markets = req.body.markets
-  const exchanges = req.body.exchanges
-  const connection = new ConnectionManager(markets, exchanges)
-
-  // Is it possible to register the websocket client to emit messages back to here?
-
-})
-
 module.exports = router;

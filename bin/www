@@ -4,7 +4,7 @@
  * Module dependencies.
  */
 
-var app = require('../app').app;
+var app = require('../server-build/app').app;
 var debug = require('debug')('arb-watch:server');
 var http = require('http');
 
@@ -19,7 +19,7 @@ app.set('port', port);
  * Create HTTP server.
  */
 
-var server = require('../app').server;
+var server = require('../server-build/app').server;
 
 /**
  * Listen on provided port, on all network interfaces.
