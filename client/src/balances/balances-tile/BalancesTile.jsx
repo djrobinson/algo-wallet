@@ -8,7 +8,7 @@ class BalancesTile extends Component {
   render() {
     return (
       <div className="balances-tile-container">
-        <h1>{this.props.mkt}</h1>
+        <h5>{this.props.mkt}</h5>
         <div className="exchanges">
           {(this.props.exchanges.length) && (this.props.exchanges.map((exch, i) => {
             return (

@@ -30,11 +30,11 @@ io.on('connection', client => {
 
 
   const registerOrderBookInit = msg => {
-    client.emit('orderbook', msg);
+    client.emit('ORDER_BOOK_INIT', msg);
   };
 
   const registerEngineEvents = msg => {
-    client.emit('ENGINE_EVENT', msg)
+    client.emit('MARKET_UPDATE', msg)
   }
 
   const registerOrderActions = msg => {

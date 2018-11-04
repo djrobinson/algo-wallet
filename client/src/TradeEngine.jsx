@@ -44,17 +44,11 @@ class TradeEngine extends Component {
 
     this.socket.emit('startEngine', {});
 
-    this.socket.on('ENGINE_EVENT', (message) => {
-      if (this.state[message.market] && this.state[message.market].bids) {
-        message.prevBids = this.state[message.market].bids
-      }
-      if (this.state[message.market] && this.state[message.market].asks) {
-        message.prevAsks = this.state[message.market].asks
-      }
-      this.setState({ [message.market]: message})
-      if (this.state.markets.indexOf(message.market) === -1) {
-        this.setState({markets: [...this.state.markets, message.market]})
-      }
+    this.socket.on('MARKET_UPDATE', (message) => {
+      console.log(message)
+    });
+    this.socket.on('ORDER_BOOK_INIT', (message) => {
+      console.log(message)
     });
     this.socket.on('ORDER_ACTION', message => {
 
