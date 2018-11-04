@@ -47,7 +47,9 @@ class Balance {
         return a
       }, {})
       return acc
-    }, {})
+    }, {
+      markets: allMarkets
+    })
     return finalBalances
   }
 
