@@ -9,9 +9,12 @@ class Balance {
     this.exchanges = exchanges
   }
   async getBalances() {
+    // TODO: THIS WILL BE PARAMS, I'D ASSUME
     let allMarkets = []
+    let allExchanges = []
     const openBalances = await Promise.all(this.exchanges.map(async (exch) => {
       console.log("What is exchange: ", exch.exchangeName)
+      allExchanges.push(exch.exchangeName)
       const rawBalances = await exch.fetchBalance()
       // Standardize rawBalances
       const exchBals = Object.keys(rawBalances.total).reduce((a, b) => {
@@ -41,7 +44,7 @@ class Balance {
       return exchBals
     }))
     console.log("What are all markets: ", allMarkets)
-    const finalBalances = allMarkets.reduce((acc, mkt) => {
+    let finalBalances = allMarkets.reduce((acc, mkt) => {
       acc[mkt] = openBalances.reduce((a, b, i) => {
         a[b.exchange] = openBalances[i].markets[mkt]
         return a
@@ -50,6 +53,8 @@ class Balance {
     }, {
       markets: allMarkets
     })
+    finalBalances.exchanges = allExchanges
+    console.log("Final bals: ", finalBalances)
     return finalBalances
   }
 

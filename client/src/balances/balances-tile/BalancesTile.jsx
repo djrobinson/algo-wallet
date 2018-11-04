@@ -10,18 +10,17 @@ class BalancesTile extends Component {
       <div className="balances-tile-container">
         <h1>{this.props.mkt}</h1>
         <div className="exchanges">
-          <div className="exchange-balance-container">
-            <h5>Bittrex</h5>
-            <span className="total">{this.props.balances.bittrex ? this.props.balances.bittrex.total : 0.00}</span>
-            <span className="used">{this.props.balances.bittrex ? this.props.balances.bittrex.used : 0.00}</span>
-            <span className="free">{this.props.balances.bittrex ? this.props.balances.bittrex.free : 0.00 }</span>
-          </div>
-          <div className="exchange-balance-container">
-            <h5>Poloniex</h5>
-            <span className="total">{this.props.balances.poloniex ? this.props.balances.poloniex.total : 0.00}</span>
-            <span className="used">{this.props.balances.poloniex ? this.props.balances.poloniex.used : 0.00}</span>
-            <span className="free">{this.props.balances.poloniex ? this.props.balances.poloniex.free : 0.00}</span>
-          </div>
+          {(this.props.exchanges.length) && (this.props.exchanges.map((exch, i) => {
+            return (
+                <div className="exchange-balance-container" key={i}>
+                  <h5>{exch}</h5>
+                  <span className="total">{this.props.balances[exch] ? this.props.balances[exch].total : 0.00}</span>
+                  <span className="used">{this.props.balances[exch] ? this.props.balances[exch].used : 0.00}</span>
+                  <span className="free">{this.props.balances[exch] ? this.props.balances[exch].free : 0.00 }</span>
+                </div>
+              )
+          }))
+        }
         </div>
       </div>
     );
