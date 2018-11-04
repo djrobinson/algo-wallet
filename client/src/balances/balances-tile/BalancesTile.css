@@ -1,0 +1,16 @@
+.balances-tile-container {
+  flex-direction: column;
+}
+
+.exchanges {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: space-around;
+  justify-content: space-around;
+}
+
+.exchange-balance-container {
+  display: inline-flex;
+  flex-direction: column;
+
+}
