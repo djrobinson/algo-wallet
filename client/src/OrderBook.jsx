@@ -19,6 +19,63 @@ class OrderBook extends Component {
     this.scrollToBottom()
   }
 
+  maintainOrderBook(
+                      book,
+                      identifier,
+                      exchange,
+                      type,
+                      market,
+                      rate,
+                      amount
+                    ) {
+    let newBook = {}
+    let bookKeys = Object.keys(book)
+    bookKeys.forEach(o => {
+      newBook[o] = book[o]
+    })
+    if (!amount && book[identifier]) {
+      delete newBook[identifier]
+      return [newBook, book]
+    } else if (book[identifier]) {
+      let order = {
+        exchange: exchange,
+        rate: rate,
+        market: market,
+        amount: amount
+      }
+      newBook[identifier] = order
+      return [newBook, book]
+    } else if (amount > 0) {
+      let order = {
+        exchange: exchange,
+        rate: rate,
+        market: market,
+        amount: amount
+      }
+      newBook[identifier] = order
+      const sortedKeys = Object.keys(newBook).sort((a, b) => {
+        if (type === 'bids') {
+          return newBook[b].rate - newBook[a].rate
+        }
+        if (type === 'asks') {
+          return newBook[a].rate - newBook[b].rate
+        }
+      })
+      let sortedNewBook = {}
+      sortedKeys.forEach(o => {
+        sortedNewBook[o] = newBook[o]
+      })
+      newBook = sortedNewBook
+    }
+    let sumAccumulator = 0
+
+    Object.keys(newBook).forEach(o => {
+       sumAccumulator = sumAccumulator + newBook[o].amount
+       newBook[o].sum = sumAccumulator
+    })
+    return [newBook, book]
+  }
+
   render() {
     let isOverlap;
     let openRates = []
