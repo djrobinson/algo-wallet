@@ -1,0 +1,1 @@
+{"type":"BID_UPDATE","market":"BTC-ETH","rateString":"poloniexBTC-ETH0.02865399","rate":0.02865399,"amount":10.093,"exchange":"poloniex"}
