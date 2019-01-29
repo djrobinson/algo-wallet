@@ -25,7 +25,7 @@ app.use(express.static(path.join(__dirname, 'client/build')));
 
 io.on('connection', client => {
   console.log("Connection", client.id);
-  const markets = ['BTC-ETH', 'BTC-LTC']
+  const markets = ['BTC-ETH']
   const exchanges = ['bittrex', 'poloniex']
 
 

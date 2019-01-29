@@ -1,7 +1,6 @@
 require('babel-polyfill');
 require('es6-promise').polyfill();
 require('isomorphic-fetch');
-const fs = require('fs')
 const log = require ('ololog')
 const ccxt = require ('ccxt')
 const events = require('events');
@@ -19,25 +18,11 @@ class ExchangeEmitter {
   emitOrderBook(order) {
       order['exchange'] = this.exchangeName
       if (order.type === 'ORDER_BOOK_INIT') {
-        fs.writeFile("/Users/danny/blockchain/algo-wallet/init.js", JSON.stringify(order), function(err) {
-            if(err) {
-                return console.log(err);
-            }
-
-            console.log("The file was saved!");
-        });
         emitter.emit(order.type, order)
       } else if (order.type === 'WS_ERROR') {
         console.log("Websocket error in emit order book")
         emitter.emit(order.type, order)
       } else {
-        fs.writeFile("/Users/danny/blockchain/algo-wallet/delta.js", JSON.stringify(order), function(err) {
-            if(err) {
-                return console.log(err);
-            }
-
-            console.log("The file was saved!");
-        });
         emitter.emit('MARKET_UPDATE', order)
       }
   }
