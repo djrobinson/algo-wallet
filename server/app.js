@@ -12,7 +12,7 @@ const indexRouter = require('./api/index');
 const { ConnectionManager } = require('./integrations/ConnectionManager')
 const bodyParser = require('body-parser');
 
-const db = require('./db/db');
+const { db } = require('./db/db');
 
 app.use(logger('dev'));
 app.use(express.json());

@@ -154,7 +154,7 @@ class Poloniex extends ExchangeEmitter {
           rate: parseFloat(bid),
           amount: parseFloat(stringBids[bid])
         };
-        aggregator[this.exchangeName + market + bid] = order;
+        aggregator[this.exchangeName + market + bid.replace('.', '-')] = order;
         return aggregator;
       }, {});
 
@@ -167,7 +167,7 @@ class Poloniex extends ExchangeEmitter {
           rate: parseFloat(ask),
           amount: parseFloat(stringAsks[ask])
         };
-        aggregator[this.exchangeName + market + ask] = order;
+        aggregator[this.exchangeName + market + ask.replace('.', '-')] = order;
         return aggregator;
       }, {});
 
@@ -183,7 +183,7 @@ class Poloniex extends ExchangeEmitter {
             let bidChange = {
               type: 'BID_UPDATE',
               market: market,
-              rateString: this.exchangeName + market + delta[2],
+              rateString: this.exchangeName + market + delta[2].replace('.', '-'),
               rate: parseFloat(delta[2]),
               amount: parseFloat(delta[3])
             }
@@ -193,7 +193,7 @@ class Poloniex extends ExchangeEmitter {
             let askChange = {
               type: 'ASK_UPDATE',
               market: market,
-              rateString: this.exchangeName + market + delta[2],
+              rateString: this.exchangeName + market + delta[2].replace('.', '-'),
               rate: parseFloat(delta[2]),
               amount: parseFloat(delta[3])
             }

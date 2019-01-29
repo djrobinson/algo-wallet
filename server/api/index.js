@@ -1,11 +1,12 @@
 const  express = require('express')
 const router = express.Router();
 const exchangesMap = require('../exchanges')
-const Run = require('../objects/Run')
 const Balance = require('../objects/Balance')
 const Bittrex = require('../integrations/exchanges/Bittrex')
 const Poloniex = require('../integrations/exchanges/Poloniex')
 const ConnectionManager = require('../integrations/ConnectionManager')
+
+const OrderBookInit = require('../db/models/orderBookInit.model')
 
 router.get('/getMarkets', async (req, res, next) => {
   const exchangeStrings = Object.keys(exchanges);
@@ -34,6 +35,16 @@ router.get('/getBalances', async (req, res, next) => {
   const balance = new Balance(exchanges)
   const balances = await balance.getBalances()
   res.json(balances)
+})
+
+router.get('/orderBookInits/:runId', async (req, res, next) => {
+  const runId = req.params.runId
+  try {
+    const inits = await OrderBookInit.find({ runId })
+    res.json(inits)
+  } catch (e) {
+    res.error(e)
+  }
 })
 
 // router.post('/setTradeStrategy', asyncMiddleware(async (req, res, next) => {

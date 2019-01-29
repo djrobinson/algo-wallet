@@ -208,7 +208,8 @@ class Bittrex extends ExchangeEmitter {
             rate: bid.R,
             amount: parseFloat(bid.Q)
           };
-          aggregator[this.exchangeName + market + bid.R.toString()] = order;
+          const bidstr = bid.R.toString()
+          aggregator[this.exchangeName + market + bidstr.replace('.', '-')] = order;
           return aggregator;
       }, {})
       const asks = sortedAsks.reduce((aggregator, ask) => {
@@ -218,7 +219,8 @@ class Bittrex extends ExchangeEmitter {
             rate: ask.R,
             amount: parseFloat(ask.Q)
           };
-          aggregator[this.exchangeName + market + ask.R.toString()] = order;
+          const askstr = ask.R.toString()
+          aggregator[this.exchangeName + market + askstr.replace('.', '-')] = order;
           return aggregator;
       }, {})
       let initOrderBook = {
@@ -233,20 +235,22 @@ class Bittrex extends ExchangeEmitter {
     }
     if (type === 'MARKET_DELTA' && marketDelta['Z'] && marketDelta['S']) {
       marketDelta['Z'].forEach((change) => {
+        const rs = change.R.toString().replace('.', '-')
         let marketDelta = {
           type: 'BID_UPDATE',
           market: market,
-          rateString: this.exchangeName + market + change.R.toString(),
+          rateString: this.exchangeName + market + rs,
           rate: change.R,
           amount: parseFloat(change.Q)
         }
         this.emitOrderBook(marketDelta);
       });
       marketDelta['S'].forEach((change) => {
+        const rs = change.R.toString().replace('.', '-')
         let marketDelta = {
           type: 'ASK_UPDATE',
           market: market,
-          rateString: this.exchangeName + market + change.R.toString(),
+          rateString: this.exchangeName + market + rs,
           rate: change.R,
           amount: parseFloat(change.Q)
         }

@@ -1,5 +1,6 @@
 //const the mongoose module
 var mongoose = require('mongoose');
+const autoIncrement = require('mongoose-auto-increment');
 
 //Set up default mongoose connection
 var mongoDB = 'mongodb://127.0.0.1/algo-wallet';
@@ -19,4 +20,6 @@ var db = mongoose.connection;
 //Bind connection to error event (to get notification of connection errors)
 db.on('error', console.error.bind(console, 'MongoDB connection error:'));
 
-module.exports = db;
+autoIncrement.initialize(db)
+
+module.exports = { db, autoIncrement };

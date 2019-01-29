@@ -11,23 +11,24 @@ class Balances extends Component {
   }
 
   componentDidMount() {
-    fetch('/api/getBalances')
-      .then(res => res.json())
-      .then(data => {
-        this.setState({
-          markets: data.markets,
-          exchanges: data.exchanges,
-          balances: data
-        })
-        console.log("What is data from balances: ", data)
-      });
+    // fetch('/api/getBalances')
+    //   .then(res => res.json())
+    //   .then(data => {
+    //     this.setState({
+    //       markets: data.markets,
+    //       exchanges: data.exchanges,
+    //       balances: data
+    //     })
+    //     console.log("What is data from balances: ", data)
+    //   });
   }
 
   render() {
     return (
       <div className="balances-row">
+        <br />
         {
-          (this.state.markets.length) && (
+          this.state.balances && (
             this.state.markets.map(mkt => {
               return <BalanceTile
                         key={mkt}

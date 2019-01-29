@@ -23,7 +23,7 @@ class ExchangeEmitter {
         console.log("Websocket error in emit order book")
         emitter.emit(order.type, order)
       } else {
-        emitter.emit('MARKET_UPDATE', order)
+        emitter.emit('ORDER_BOOK_UPDATE', order)
       }
   }
 

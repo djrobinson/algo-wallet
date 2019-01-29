@@ -1,4 +1,5 @@
 const  mongoose = require('mongoose');
+const { autoIncrement } = require('../db')
 
 const Schema = mongoose.Schema
 

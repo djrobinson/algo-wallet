@@ -1,10 +1,7 @@
 const mongoose = require('mongoose');
-const autoIncrement = require('mongoose-auto-increment');
-const db = require('../db')
+const { autoIncrement } = require('../db')
 
 const Schema = mongoose.Schema
-
-autoIncrement.initialize(db)
 
 const RunModel = new Schema({
     time: { type: Date, default: Date.now },
@@ -15,7 +12,7 @@ const RunModel = new Schema({
     alpha: Number
 })
 
-RunModel.plugin(autoIncrement.plugin, { model: 'Run', field: 'runId' })
+RunModel.plugin(autoIncrement.plugin, 'Run')
 
 const Run = mongoose.model( 'Run', RunModel )
 
